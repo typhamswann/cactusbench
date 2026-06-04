@@ -1,0 +1,52 @@
+schema_version = "1.1"
+artifacts = []
+
+[task]
+name = "saguarobench/41B-01A"
+description = "Match 2026 arm numbers to 2023 arm numbers (or 'new') for saguaro 41B-01A on plot 41B. Difficulty: medium."
+authors = ["Ty Pham-Swann"]
+keywords = ["multimodal", "vlm", "saguaro", "arm-matching", "saguaro-bench"]
+
+[metadata]
+ext_id = "saguarobench-41B-01A"
+task_id = "41B-01A"
+display_title = "Match arms across years for 41B-01A"
+display_description = "Match 2026 arm numbers to 2023 arm numbers (or 'new') for saguaro 41B-01A. Difficulty: medium."
+category = "multimodal-matching"
+language = "english"
+repository_url = "https://github.com/typhamswann/saguaro-bench"
+plot = "41B"
+split = "train"
+difficulty = "medium"
+n_arms_2023 = 2
+n_arms_2026 = 2
+n_photos_2023 = 4
+n_photos_2026 = 4
+redaction_status_2023 = "hand"
+redaction_status_2026 = "hand"
+redaction_status = "hand"
+
+[verifier]
+timeout_sec = 300.0
+
+[verifier.env]
+
+[agent]
+timeout_sec = 1800.0
+
+[environment]
+build_timeout_sec = 600.0
+docker_image = "saguaro-bench-task:1.0"
+os = "linux"
+cpus = 1
+memory_mb = 2048
+storage_mb = 2048
+gpus = 0
+allow_internet = false
+mcp_servers = []
+
+[environment.env]
+
+[solution]
+
+[solution.env]

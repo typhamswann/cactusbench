@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "saguaro-bench-env"
+version = "0.1.0"
+description = "SaguaroBench Harbor runtime (vendored). The `sab harbor-*` CLI that drives benchmark task containers for the saguaro-arm-matching environment."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Tyler Pham-Swann" }]
+
+# Deliberately tiny: the Harbor path only needs JSON I/O + filesystem.
+# No verifiers, no boto3, no Pillow — the agent reads the bundled PNGs/JPGs
+# directly; this runtime just stages them into /workspace and scores the
+# submission.
+dependencies = []
+
+[project.scripts]
+sab = "saguaro_bench_env.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/saguaro_bench_env"]

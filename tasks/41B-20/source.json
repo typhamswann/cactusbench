@@ -1,0 +1,274 @@
+{
+  "saguaro_id": "41B-20",
+  "easting": 525376,
+  "northing": 3563423,
+  "saguaro_height_m_2023": 5.9,
+  "saguaro_height_m_2026": 6.06,
+  "diameter_m_2023": 0.47,
+  "diameter_m_2026": 0.5,
+  "date_2023": "2023-10-25",
+  "date_2026": "2026-03-10",
+  "volunteer_2023": "Debbie (volunteer)",
+  "rows_2023": [
+    {
+      "saguaro_id": "41B-20",
+      "year": 2023,
+      "volunteer": "Debbie (volunteer)",
+      "date": "2023-10-25",
+      "easting": 525376,
+      "northing": 3563423,
+      "saguaro_height_m": 5.9,
+      "diameter_m": 0.47,
+      "arm_n_raw": "1",
+      "is_nubbin": false,
+      "direction_deg": 300,
+      "direction_corrected_deg": 291,
+      "A": 2.92,
+      "B": 0.93,
+      "C": 3.1,
+      "D": 0.93,
+      "E": 0.2,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-20",
+      "year": 2023,
+      "volunteer": "Debbie (volunteer)",
+      "date": "2023-10-25",
+      "easting": 525376,
+      "northing": 3563423,
+      "saguaro_height_m": 5.9,
+      "diameter_m": 0.47,
+      "arm_n_raw": "2",
+      "is_nubbin": false,
+      "direction_deg": 120,
+      "direction_corrected_deg": 111,
+      "A": 2.86,
+      "B": 0.99,
+      "C": 3.65,
+      "D": 1.03,
+      "E": 0.5,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-20",
+      "year": 2023,
+      "volunteer": "Debbie (volunteer)",
+      "date": "2023-10-25",
+      "easting": 525376,
+      "northing": 3563423,
+      "saguaro_height_m": 5.9,
+      "diameter_m": 0.47,
+      "arm_n_raw": "3",
+      "is_nubbin": false,
+      "direction_deg": 165,
+      "direction_corrected_deg": 156,
+      "A": 2.87,
+      "B": 0.93,
+      "C": 3.8,
+      "D": 0.96,
+      "E": 0.5,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-20",
+      "year": 2023,
+      "volunteer": "Debbie (volunteer)",
+      "date": "2023-10-25",
+      "easting": 525376,
+      "northing": 3563423,
+      "saguaro_height_m": 5.9,
+      "diameter_m": 0.47,
+      "arm_n_raw": "4",
+      "is_nubbin": false,
+      "direction_deg": 225,
+      "direction_corrected_deg": 216,
+      "A": 2.58,
+      "B": 0.92,
+      "C": 2.92,
+      "D": 0.9,
+      "E": 0.3,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-20",
+      "year": 2023,
+      "volunteer": "Debbie (volunteer)",
+      "date": "2023-10-25",
+      "easting": 525376,
+      "northing": 3563423,
+      "saguaro_height_m": 5.9,
+      "diameter_m": 0.47,
+      "arm_n_raw": "5",
+      "is_nubbin": false,
+      "direction_deg": 250,
+      "direction_corrected_deg": 241,
+      "A": 3.03,
+      "B": 0.92,
+      "C": 3.27,
+      "D": 0.9,
+      "E": 0.3,
+      "note": ""
+    }
+  ],
+  "rows_2026": [
+    {
+      "saguaro_id": "41B-20",
+      "year": 2026,
+      "volunteer": null,
+      "date": "2026-03-10",
+      "easting": 525378,
+      "northing": 3563426,
+      "saguaro_height_m": 6.06,
+      "diameter_m": 0.5,
+      "arm_n_raw": "1",
+      "is_nubbin": false,
+      "direction_deg": 138,
+      "direction_raw_deg": 138,
+      "A": 2.89,
+      "B": 1.03,
+      "C": 3.8,
+      "D": 1.1,
+      "E": 0.54,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-20",
+      "year": 2026,
+      "volunteer": null,
+      "date": "2026-03-10",
+      "easting": 525378,
+      "northing": 3563426,
+      "saguaro_height_m": 6.06,
+      "diameter_m": 0.5,
+      "arm_n_raw": "2",
+      "is_nubbin": false,
+      "direction_deg": 165,
+      "direction_raw_deg": 165,
+      "A": 2.9,
+      "B": 0.96,
+      "C": 3.96,
+      "D": 0.97,
+      "E": 0.51,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-20",
+      "year": 2026,
+      "volunteer": null,
+      "date": "2026-03-10",
+      "easting": 525378,
+      "northing": 3563426,
+      "saguaro_height_m": 6.06,
+      "diameter_m": 0.5,
+      "arm_n_raw": "3",
+      "is_nubbin": false,
+      "direction_deg": 225,
+      "direction_raw_deg": 225,
+      "A": 2.59,
+      "B": 0.92,
+      "C": 3.06,
+      "D": 0.91,
+      "E": 0.35,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-20",
+      "year": 2026,
+      "volunteer": null,
+      "date": "2026-03-10",
+      "easting": 525378,
+      "northing": 3563426,
+      "saguaro_height_m": 6.06,
+      "diameter_m": 0.5,
+      "arm_n_raw": "4",
+      "is_nubbin": false,
+      "direction_deg": 256,
+      "direction_raw_deg": 256,
+      "A": 3.03,
+      "B": 0.92,
+      "C": 3.36,
+      "D": 0.88,
+      "E": 0.35,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-20",
+      "year": 2026,
+      "volunteer": null,
+      "date": "2026-03-10",
+      "easting": 525378,
+      "northing": 3563426,
+      "saguaro_height_m": 6.06,
+      "diameter_m": 0.5,
+      "arm_n_raw": "5",
+      "is_nubbin": false,
+      "direction_deg": 290,
+      "direction_raw_deg": 290,
+      "A": 2.93,
+      "B": 0.93,
+      "C": 3.15,
+      "D": 0.95,
+      "E": 0.3,
+      "note": ""
+    }
+  ],
+  "ground_truth": {
+    "mapping": {
+      "5": "1",
+      "1": "2",
+      "2": "3",
+      "3": "4",
+      "4": "5"
+    },
+    "difficulty": "medium",
+    "arm_difficulties": {
+      "5": "easy",
+      "1": "medium",
+      "2": "easy",
+      "3": "easy",
+      "4": "easy"
+    }
+  },
+  "split": "train",
+  "assets": {
+    "datasheet_2023": "/task/assets/datasheet_2023.png",
+    "datasheet_2026": "/task/assets/datasheet_2026.png",
+    "photos_2023": [
+      {
+        "path": "/task/assets/photos/2023_photo_1.jpg",
+        "direction_label": null
+      },
+      {
+        "path": "/task/assets/photos/2023_photo_2.jpg",
+        "direction_label": null
+      },
+      {
+        "path": "/task/assets/photos/2023_photo_3.jpg",
+        "direction_label": null
+      },
+      {
+        "path": "/task/assets/photos/2023_photo_4.jpg",
+        "direction_label": null
+      }
+    ],
+    "photos_2026": [
+      {
+        "path": "/task/assets/photos/2026_photo_1.jpg",
+        "direction_label": null
+      },
+      {
+        "path": "/task/assets/photos/2026_photo_2.jpg",
+        "direction_label": null
+      },
+      {
+        "path": "/task/assets/photos/2026_photo_3.jpg",
+        "direction_label": null
+      },
+      {
+        "path": "/task/assets/photos/2026_photo_4.jpg",
+        "direction_label": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.DS_Store
+.env
+.venv/
+venv/
+env/
+dist/
+build/
+
+# Per-run artifacts (don't ship)
+**/logs/verifier/
+**/logs/agent/
+**/logs/artifacts/
+/workspace/

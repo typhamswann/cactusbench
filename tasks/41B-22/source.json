@@ -1,0 +1,304 @@
+{
+  "saguaro_id": "41B-22",
+  "easting": 525369,
+  "northing": 3563372,
+  "saguaro_height_m_2023": 7.25,
+  "saguaro_height_m_2026": 7.38,
+  "diameter_m_2023": 0.46,
+  "diameter_m_2026": 0.48,
+  "date_2023": "2023-10-25",
+  "date_2026": "2026-04-01",
+  "volunteer_2023": "Debbie (volunteer)",
+  "rows_2023": [
+    {
+      "saguaro_id": "41B-22",
+      "year": 2023,
+      "volunteer": "Debbie (volunteer)",
+      "date": "2023-10-25",
+      "easting": 525369,
+      "northing": 3563372,
+      "saguaro_height_m": 7.25,
+      "diameter_m": 0.46,
+      "arm_n_raw": "1",
+      "is_nubbin": false,
+      "direction_deg": 320,
+      "direction_corrected_deg": 311,
+      "A": 2.7,
+      "B": 0.97,
+      "C": 3.47,
+      "D": 1.02,
+      "E": 0.3,
+      "note": "Secondary appendage growing out of arm, narrower and further from trunk"
+    },
+    {
+      "saguaro_id": "41B-22",
+      "year": 2023,
+      "volunteer": "Debbie (volunteer)",
+      "date": "2023-10-25",
+      "easting": 525369,
+      "northing": 3563372,
+      "saguaro_height_m": 7.25,
+      "diameter_m": 0.46,
+      "arm_n_raw": "2",
+      "is_nubbin": false,
+      "direction_deg": 50,
+      "direction_corrected_deg": 41,
+      "A": 2.84,
+      "B": 1.01,
+      "C": 3.82,
+      "D": 1.03,
+      "E": 0.5,
+      "note": "Arm on Arm!!"
+    },
+    {
+      "saguaro_id": "41B-22",
+      "year": 2023,
+      "volunteer": "Debbie (volunteer)",
+      "date": "2023-10-25",
+      "easting": 525369,
+      "northing": 3563372,
+      "saguaro_height_m": 7.25,
+      "diameter_m": 0.46,
+      "arm_n_raw": "3",
+      "is_nubbin": false,
+      "direction_deg": 110,
+      "direction_corrected_deg": 101,
+      "A": 2.9,
+      "B": 0.98,
+      "C": 3.91,
+      "D": 1.01,
+      "E": 0.5,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-22",
+      "year": 2023,
+      "volunteer": "Debbie (volunteer)",
+      "date": "2023-10-25",
+      "easting": 525369,
+      "northing": 3563372,
+      "saguaro_height_m": 7.25,
+      "diameter_m": 0.46,
+      "arm_n_raw": "4",
+      "is_nubbin": false,
+      "direction_deg": 220,
+      "direction_corrected_deg": 211,
+      "A": 3.1,
+      "B": 0.91,
+      "C": 4.05,
+      "D": 0.89,
+      "E": 0.5,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-22",
+      "year": 2023,
+      "volunteer": "Debbie (volunteer)",
+      "date": "2023-10-25",
+      "easting": 525369,
+      "northing": 3563372,
+      "saguaro_height_m": 7.25,
+      "diameter_m": 0.46,
+      "arm_n_raw": "5",
+      "is_nubbin": false,
+      "direction_deg": 240,
+      "direction_corrected_deg": 231,
+      "A": 2.8,
+      "B": 0.89,
+      "C": 3.1,
+      "D": 0.89,
+      "E": 0.2,
+      "note": ""
+    }
+  ],
+  "rows_2026": [
+    {
+      "saguaro_id": "41B-22",
+      "year": 2026,
+      "volunteer": null,
+      "date": "2026-04-01",
+      "easting": 525370,
+      "northing": 3563373,
+      "saguaro_height_m": 7.38,
+      "diameter_m": 0.48,
+      "arm_n_raw": "1",
+      "is_nubbin": false,
+      "direction_deg": 46,
+      "direction_raw_deg": 46,
+      "A": 2.85,
+      "B": 1.045,
+      "C": 3.97,
+      "D": 1.075,
+      "E": 0.45,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-22",
+      "year": 2026,
+      "volunteer": null,
+      "date": "2026-04-01",
+      "easting": 525370,
+      "northing": 3563373,
+      "saguaro_height_m": 7.38,
+      "diameter_m": 0.48,
+      "arm_n_raw": "2",
+      "is_nubbin": false,
+      "direction_deg": 98,
+      "direction_raw_deg": 98,
+      "A": 2.92,
+      "B": 1.033,
+      "C": 4.1,
+      "D": 1.073,
+      "E": 0.4,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-22",
+      "year": 2026,
+      "volunteer": null,
+      "date": "2026-04-01",
+      "easting": 525370,
+      "northing": 3563373,
+      "saguaro_height_m": 7.38,
+      "diameter_m": 0.48,
+      "arm_n_raw": "3",
+      "is_nubbin": false,
+      "direction_deg": 226,
+      "direction_raw_deg": 226,
+      "A": 3.02,
+      "B": 0.925,
+      "C": 4.07,
+      "D": 0.925,
+      "E": 0.4,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-22",
+      "year": 2026,
+      "volunteer": null,
+      "date": "2026-04-01",
+      "easting": 525370,
+      "northing": 3563373,
+      "saguaro_height_m": 7.38,
+      "diameter_m": 0.48,
+      "arm_n_raw": "4",
+      "is_nubbin": false,
+      "direction_deg": 259,
+      "direction_raw_deg": 259,
+      "A": 2.8,
+      "B": 0.92,
+      "C": 3.21,
+      "D": 0.919,
+      "E": 0.35,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-22",
+      "year": 2026,
+      "volunteer": null,
+      "date": "2026-04-01",
+      "easting": 525370,
+      "northing": 3563373,
+      "saguaro_height_m": 7.38,
+      "diameter_m": 0.48,
+      "arm_n_raw": "5",
+      "is_nubbin": false,
+      "direction_deg": 322,
+      "direction_raw_deg": 322,
+      "A": 2.26,
+      "B": 0.986,
+      "C": 3.68,
+      "D": 1.04,
+      "E": 0.25,
+      "note": ""
+    },
+    {
+      "saguaro_id": "41B-22",
+      "year": 2026,
+      "volunteer": null,
+      "date": "2026-04-01",
+      "easting": 525370,
+      "northing": 3563373,
+      "saguaro_height_m": 7.38,
+      "diameter_m": 0.48,
+      "arm_n_raw": "6",
+      "is_nubbin": false,
+      "direction_deg": 322,
+      "direction_raw_deg": 322,
+      "A": 2.26,
+      "B": 0.986,
+      "C": 2.96,
+      "D": 1.019,
+      "E": 0.7,
+      "note": ""
+    }
+  ],
+  "ground_truth": {
+    "mapping": {
+      "5": "1",
+      "1": "2",
+      "2": "3",
+      "3": "4",
+      "4": "5",
+      "6": "new"
+    },
+    "difficulty": "hard",
+    "arm_difficulties": {
+      "5": "hard",
+      "1": "easy",
+      "2": "medium",
+      "3": "easy",
+      "4": "medium",
+      "6": "medium"
+    }
+  },
+  "split": "val",
+  "assets": {
+    "datasheet_2023": "/task/assets/datasheet_2023.png",
+    "datasheet_2026": "/task/assets/datasheet_2026.png",
+    "photos_2023": [
+      {
+        "path": "/task/assets/photos/2023_photo_1.jpg",
+        "direction_label": null
+      },
+      {
+        "path": "/task/assets/photos/2023_photo_2.jpg",
+        "direction_label": null
+      },
+      {
+        "path": "/task/assets/photos/2023_photo_3.jpg",
+        "direction_label": null
+      },
+      {
+        "path": "/task/assets/photos/2023_photo_4.jpg",
+        "direction_label": null
+      }
+    ],
+    "photos_2026": [
+      {
+        "path": "/task/assets/photos/2026_photo_1.jpg",
+        "direction_label": null
+      },
+      {
+        "path": "/task/assets/photos/2026_photo_2.jpg",
+        "direction_label": null
+      },
+      {
+        "path": "/task/assets/photos/2026_photo_3.jpg",
+        "direction_label": null
+      },
+      {
+        "path": "/task/assets/photos/2026_photo_4.jpg",
+        "direction_label": null
+      },
+      {
+        "path": "/task/assets/photos/2026_photo_5.jpg",
+        "direction_label": null
+      },
+      {
+        "path": "/task/assets/photos/2026_photo_6.jpg",
+        "direction_label": null
+      }
+    ]
+  }
+}
