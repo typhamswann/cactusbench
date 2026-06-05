@@ -1,0 +1,12 @@
+{
+  "saguaro_id": "41B-09",
+  "ground_truth_mapping": {
+    "1": "1"
+  },
+  "valid_2023_arms": [
+    "1"
+  ],
+  "valid_2026_arms": [
+    "1"
+  ]
+}

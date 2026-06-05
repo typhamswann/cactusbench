@@ -28,11 +28,13 @@ redaction_status = "hand"
 
 [verifier]
 timeout_sec = 300.0
+user = "root"
 
 [verifier.env]
 
 [agent]
 timeout_sec = 1800.0
+user = "agent"
 
 [environment]
 build_timeout_sec = 600.0
