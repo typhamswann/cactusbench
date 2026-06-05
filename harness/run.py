@@ -56,29 +56,30 @@ from tools import DISPATCH, parse_tool_call, ALLOWED
 # -----------------------------------------------------------------------------
 
 SYSTEM_PROMPT = """\
-You are matching saguaro cactus arm measurements across two citizen-science survey years (2023 and 2026) on the same plant.
+You are curating saguaro cactus arm measurements from two citizen-science survey years (2023 and 2026) on the same plant.
 
-Volunteers numbered the arms independently each year, so the 2026 arm numbers do NOT necessarily correspond to the 2023 ones. For each 2026 arm, decide which 2023 arm is the same physical arm, or "new" if the arm appeared since 2023.
+Volunteers measured the saguaro on paper field-forms, numbering each year's arms independently. A human curator then matches arms across years (same physical arm = same canonical number) and produces a single cleaned table — one row per (year, canonical_arm) — with every measurement and recorder-note re-keyed into the canonical schema. Your job is to produce that cleaned table.
 
 Measurement columns (per arm, per year):
-- direction: compass bearing from saguaro center out to the arm, in degrees (0=N, 90=E, 180=S, 270=W).
+- direction: compass bearing from main stem out to the arm, in degrees (0=N, 90=E, 180=S, 270=W).
 - A: height in meters from the ground to where the arm emerges from the main stem.
 - B: height in meters from the ground to a 1 m datum mark on the stem near where A was measured.
 - C: height from the ground to the tip of the arm.
 - D: height from the ground to a 1 m datum mark on the stem near where C was measured.
 - E: horizontal distance in meters from the main stem to the arm tip.
+- note: recorder annotation (e.g. "5 nubbins", "arm broke off", "tag 69"). Use "" if none.
 
 Biological constraints: saguaro arms grow slowly. They rarely shrink. New arms emerge between surveys; existing arms only rarely disappear.
 
 # Your environment
 
 Your workspace is /workspace/. The relevant files are:
-- /workspace/instruction.md         the task statement
-- /workspace/brief.md               digitized arm rows + photo inventory
-- /workspace/datasheets/2023.png    hand-redacted volunteer field form
-- /workspace/datasheets/2026.png    hand-redacted volunteer field form
-- /workspace/photos/2023/photo_<N>.jpg
-- /workspace/photos/2026/photo_<N>.jpg
+- /workspace/instruction.md         short pointer at brief.md
+- /workspace/brief.md               full task statement + opaque-asset inventory + I/O schema + per-year canonical-arm list
+- /workspace/datasheets/sheet_A.png  hand-redacted volunteer field form — year UNKNOWN from filename; read the date header
+- /workspace/datasheets/sheet_B.png  the OTHER year, also hand-redacted
+- /workspace/photos/photo_001.jpg   field photo (year unknown, mixed)
+- /workspace/photos/photo_NNN.jpg   ...
 
 # Protocol
 
@@ -94,28 +95,31 @@ Tools:
 - view_image({"path": "<file>"})
     Stage an image so it appears (base64-attached) in the NEXT user message.
 - write_submission({"content": "<json string>"})
-    Write your final mapping as a JSON STRING to /workspace/submission.json
-    and end the task. `content` must be a JSON object mapping every 2026 arm
-    number to a 2023 arm number (as strings) or the literal "new". The
-    mapping must be a function — no two 2026 arms may map to the same
-    non-"new" 2023 arm.
+    Write your final cleaned table as a JSON STRING to /workspace/submission.json
+    and end the task. `content` must be a JSON LIST of row objects. Each row:
+      {"saguaro_id": "<sid>", "year": <2023 or 2026>, "arm": "<canonical-number-string>",
+       "direction": <number>, "A": <number>, "B": <number>, "C": <number>,
+       "D": <number>, "E": <number>, "note": "<string>"}
+    Produce one row per (year, canonical_arm) listed in the brief's row
+    schedule. Canonical arm numbers identify the SAME physical arm across
+    years — the volunteer's paper-arm numbers DO NOT match canonical.
 
 Recommended workflow:
 1. read_text /workspace/instruction.md
 2. read_text /workspace/brief.md
-3. view_image /workspace/datasheets/2026.png
-4. view_image /workspace/datasheets/2023.png
-5. Examine photos as needed via view_image (the brief lists how many are
-   available; use 1-based indexing).
-6. write_submission(...) to finish.
+3. list_dir /workspace/photos      (see how many photos there are)
+4. view_image both datasheets to determine which is 2023 vs 2026
+5. Examine photos via view_image as needed to disambiguate arm matching
+6. write_submission(...) with the full canonical-arm table
 
 Output ONLY the JSON tool call. No prose before or after."""
 
 
 INITIAL_USER = """\
-Start matching saguaro {sid}. The full task statement is at
-/workspace/instruction.md and the per-task brief (arm rows + photo
-inventory) is at /workspace/brief.md. Emit your first tool call."""
+Start curating saguaro {sid}. The full task statement is at
+/workspace/instruction.md and the per-task brief (asset inventory +
+per-year canonical-arm list + I/O schema) is at /workspace/brief.md.
+Emit your first tool call."""
 
 
 # -----------------------------------------------------------------------------
@@ -124,24 +128,22 @@ inventory) is at /workspace/brief.md. Emit your first tool call."""
 
 def setup_workspace(task_dir: Path) -> Path:
     """Copy a task's bundled assets into a temp host dir that becomes
-    /workspace from the agent's perspective. Returns the host workspace
-    root.
+    /workspace from the agent's perspective. Mirrors the curation v0.3
+    layout: opaque sheet/photo filenames, flat photo dir.
     """
     ws = Path(tempfile.mkdtemp(prefix="sb_ws_"))
-    # Mirror what environment/Dockerfile does at build time.
     shutil.copyfile(task_dir / "instruction.md", ws / "instruction.md")
     shutil.copyfile(task_dir / "brief.md",       ws / "brief.md")
+    src_sheets = task_dir / "assets" / "datasheets"
     (ws / "datasheets").mkdir()
-    shutil.copyfile(task_dir / "assets" / "datasheets" / "2023.png", ws / "datasheets" / "2023.png")
-    shutil.copyfile(task_dir / "assets" / "datasheets" / "2026.png", ws / "datasheets" / "2026.png")
-    (ws / "photos" / "2023").mkdir(parents=True)
-    (ws / "photos" / "2026").mkdir(parents=True)
-    for year in (2023, 2026):
-        src = task_dir / "assets" / "photos" / str(year)
-        if not src.exists():
-            continue
-        for f in sorted(src.iterdir()):
-            shutil.copyfile(f, ws / "photos" / str(year) / f.name)
+    for f in sorted(src_sheets.iterdir()):
+        shutil.copyfile(f, ws / "datasheets" / f.name)
+    src_photos = task_dir / "assets" / "photos"
+    (ws / "photos").mkdir()
+    if src_photos.exists():
+        for f in sorted(src_photos.iterdir()):
+            if f.is_file():
+                shutil.copyfile(f, ws / "photos" / f.name)
     return ws
 
 
@@ -260,8 +262,7 @@ def run_task(
         reward_json = json.loads(proc.stdout)
     except Exception as e:
         reward_json = {
-            "exact_mapping_reward": 0.0,
-            "arm_pair_f1": 0.0,
+            "cell_accuracy_reward": 0.0,
             "structural_error": f"scoring_subprocess_error: {e}",
         }
 
@@ -269,8 +270,17 @@ def run_task(
         "saguaro_id": sid,
         "model_tag": model_tag,
         "model_slug": model_slug,
-        "exact_mapping_reward": reward_json.get("exact_mapping_reward", 0.0),
-        "arm_pair_f1": reward_json.get("arm_pair_f1", 0.0),
+        "cell_accuracy_reward": reward_json.get("cell_accuracy_reward", 0.0),
+        "base_cell_accuracy": reward_json.get("base_cell_accuracy", 0.0),
+        "extra_row_penalty": reward_json.get("extra_row_penalty", 0.0),
+        "row_f1": reward_json.get("row_f1", 0.0),
+        "rows_truth": reward_json.get("rows_truth"),
+        "rows_pred_scored": reward_json.get("rows_pred_scored"),
+        "rows_matched": reward_json.get("rows_matched"),
+        "rows_missing": reward_json.get("rows_missing"),
+        "rows_extra": reward_json.get("rows_extra"),
+        "rows_excluded": reward_json.get("rows_excluded"),
+        "per_field_accuracy": reward_json.get("per_field_accuracy"),
         "structural_error": reward_json.get("structural_error"),
         "stop": stop,
         "turns_taken": turn,
@@ -395,11 +405,14 @@ def main() -> int:
                     "model_tag": tag,
                     "model_slug": slug,
                     "error": str(e)[:200],
-                    "exact_mapping_reward": 0.0,
-                    "arm_pair_f1": 0.0,
+                    "cell_accuracy_reward": 0.0,
+                    "row_f1": 0.0,
                 }
             results.append(rec)
-            print(f"    -> reward={rec.get('exact_mapping_reward')}  f1={rec.get('arm_pair_f1', 0):.3f}  "
+            print(f"    -> reward={rec.get('cell_accuracy_reward', 0):.3f}  "
+                  f"row_f1={rec.get('row_f1', 0):.3f}  "
+                  f"rows={rec.get('rows_matched')}/{rec.get('rows_truth')}  "
+                  f"extra={rec.get('rows_extra')}  "
                   f"turns={rec.get('turns_taken')}  stop={rec.get('stop')}  "
                   f"err={rec.get('structural_error')}", flush=True)
             # Incremental write so a SIGINT doesn't lose results
@@ -415,9 +428,9 @@ def main() -> int:
             }, indent=2))
 
         n = len(results)
-        mean_exact = sum(r.get("exact_mapping_reward", 0) for r in results) / max(1, n)
-        mean_f1 = sum(r.get("arm_pair_f1", 0) for r in results) / max(1, n)
-        print(f"[{tag}] done. mean exact={mean_exact:.3f}  mean f1={mean_f1:.3f}  "
+        mean_cell = sum(r.get("cell_accuracy_reward", 0) for r in results) / max(1, n)
+        mean_f1 = sum(r.get("row_f1", 0) for r in results) / max(1, n)
+        print(f"[{tag}] done. mean cell={mean_cell:.3f}  mean row_f1={mean_f1:.3f}  "
               f"cost=${client.cost_usd:.3f}  providers={sorted(client.served_providers)}"
               f"{'  CAPPED' if capped else ''}", flush=True)
 

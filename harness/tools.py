@@ -131,15 +131,19 @@ def write_submission(args: dict, root: Path, state: dict) -> str:
     content = args.get("content")
     if content is None:
         return _err("write_submission: missing 'content' argument")
-    if isinstance(content, dict):
+    # Accept native list/dict objects too — re-serialize.
+    if isinstance(content, (list, dict)):
         content = json.dumps(content)
     if not isinstance(content, str):
-        return _err("write_submission: 'content' must be a JSON string or object")
-    # Soft validate: must at least be JSON-parseable.
+        return _err("write_submission: 'content' must be a JSON string, list, or object")
+    # Soft validate: must at least be JSON-parseable. The curation scorer
+    # expects a list of row dicts, but we also accept dict-wrapped forms
+    # ({"rows": [...]} or {"submission": "<json-string>"}) — score.py handles
+    # the unwrap. The matching scorer expects a dict.
     try:
         parsed = json.loads(content)
-        if not isinstance(parsed, dict):
-            return _err("write_submission: content must decode to a JSON object")
+        if not isinstance(parsed, (list, dict)):
+            return _err("write_submission: content must decode to a JSON list or object")
     except Exception as e:
         return _err(f"write_submission: content is not valid JSON: {e}")
     sub_path = root / "submission.json"
