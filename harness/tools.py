@@ -162,6 +162,92 @@ DISPATCH = {
 
 
 # -----------------------------------------------------------------------------
+# Native function-calling schemas (OpenAI tool format). Passed to the model via
+# OpenRouter's `tools` parameter; OpenRouter normalizes each backend's native
+# tool-call dialect into a structured `tool_calls` field. This is the modern
+# frontier-benchmark default (SWE-agent FunctionCallingParser / mini-swe-agent).
+# -----------------------------------------------------------------------------
+
+TOOL_SCHEMAS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "list_dir",
+            "description": "List the contents of a directory in the /workspace sandbox.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Directory to list, e.g. '.', 'datasheets', or 'photos'.",
+                    }
+                },
+                "required": ["path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "read_text",
+            "description": "Read a UTF-8 text file in the /workspace sandbox (e.g. instruction.md).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string", "description": "File path to read."}
+                },
+                "required": ["path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "view_image",
+            "description": (
+                "View an image file (a datasheet PNG or a field photo JPG) in the "
+                "/workspace sandbox. The image is returned so you can read it."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Image path, e.g. 'datasheets/sheet_A.png' or 'photos/photo_001.jpg'.",
+                    }
+                },
+                "required": ["path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "write_submission",
+            "description": (
+                "Write the final cleaned table to /workspace/submission.json and end "
+                "the task. Call this exactly once when your answer is ready."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "type": "string",
+                        "description": (
+                            "The cleaned table as a JSON array (encoded as a string) of "
+                            "row objects, each with keys saguaro_id, year, arm, direction, "
+                            "A, B, C, D, E, note."
+                        ),
+                    }
+                },
+                "required": ["content"],
+            },
+        },
+    },
+]
+
+
+# -----------------------------------------------------------------------------
 # Parsing the assistant's reply -> (tool, args) | None
 # -----------------------------------------------------------------------------
 

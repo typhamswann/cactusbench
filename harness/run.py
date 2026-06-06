@@ -48,36 +48,49 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
 sys.path.insert(0, str(HERE))
 
-from openrouter import OpenRouterClient
-from tools import DISPATCH, parse_tool_call, ALLOWED
+from openrouter import OpenRouterClient, ToolsUnsupported
+from tools import DISPATCH, parse_tool_call, ALLOWED, TOOL_SCHEMAS
 
 
 # -----------------------------------------------------------------------------
-# System prompt — agent shape ONLY (tools + protocol). All task/domain content
-# lives in the task's instruction.md, which is delivered verbatim as the first
-# user message (DeepSWE convention: the task is pure prompt content; the agent
-# supplies its own system prompt). The model sees the system prompt once.
+# System prompts — agent shape ONLY (tools + protocol). All task/domain content
+# lives in the task's instruction.md, delivered verbatim as the first user
+# message (DeepSWE convention: the task is pure prompt content; the agent
+# supplies its own system prompt).
+#
+# Two modes, matching what frontier agentic benchmarks do:
+#   FC   — native function-calling. The tool schemas are passed via the API's
+#          `tools` parameter; the model reasons freely and emits structured
+#          tool calls (SWE-agent FunctionCallingParser / mini-swe-agent default).
+#   TEXT — fallback for models without function-calling support: the model
+#          reasons, then emits one JSON tool call object (ReAct / ThoughtAction).
 # -----------------------------------------------------------------------------
 
-SYSTEM_PROMPT = """\
+SYSTEM_PROMPT_FC = """\
+You are an autonomous agent working inside a Unix workspace at /workspace/. You
+complete the task described in the first user message by calling the provided
+tools (list_dir, read_text, view_image, write_submission).
+
+Think step by step, inspect the files and images you need, then call
+write_submission exactly once with your final answer. Make exactly one tool
+call at a time and wait for its result before the next."""
+
+SYSTEM_PROMPT_TEXT = """\
 You are an autonomous agent working inside a Unix workspace at /workspace/. You
 complete the task described in the first user message by issuing tool calls.
 
-Emit EXACTLY ONE tool call per turn as a single JSON object and nothing else:
+You may reason briefly, but every reply MUST end with exactly one tool call as a
+single JSON object on its own line:
 
     {"tool": "<name>", "args": {...}}
 
 Tools:
 - list_dir({"path": "<dir>"})            — list a directory.
 - read_text({"path": "<file>"})          — return a text file's contents.
-- view_image({"path": "<file>"})         — attach an image (base64) to the NEXT
-                                           user message so you can see it.
-- write_submission({"content": "<str>"}) — write <content> verbatim to
+- view_image({"path": "<file>"})         — attach an image so you can see it.
+- write_submission({"content": "<str>"}) — write <content> to
                                            /workspace/submission.json and end
-                                           the task. Call this exactly once,
-                                           when your answer is ready.
-
-Output ONLY the JSON tool call — no prose before or after it."""
+                                           the task. Call this exactly once."""
 
 
 # -----------------------------------------------------------------------------
@@ -139,8 +152,9 @@ def run_task(
     state: dict = {"images_viewed": [], "done": False, "submission_path": None}
 
     instruction = (task_dir / "instruction.md").read_text()
+    use_fc = True  # try native function-calling first; fall back to text mode
     messages: list[dict] = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": SYSTEM_PROMPT_FC},
         {"role": "user",   "content": instruction},
     ]
 
@@ -154,58 +168,125 @@ def run_task(
         with log_path.open("a") as f:
             f.write(f"{time.strftime('%H:%M:%S')} [{model_tag}] {sid} {line}\n")
 
+    def _run_tool(name: str, raw_args) -> object:
+        """Dispatch one tool call. raw_args may be a JSON string or a dict."""
+        if isinstance(raw_args, str):
+            try:
+                a = json.loads(raw_args or "{}")
+            except Exception:
+                a = {}
+        else:
+            a = raw_args or {}
+        if name not in ALLOWED:
+            return f"ERROR: unknown tool {name!r}; allowed: {sorted(ALLOWED)}"
+        if not isinstance(a, dict):
+            return f"ERROR: arguments for {name!r} must be a JSON object"
+        return DISPATCH[name](a, ws, state)
+
+    def _stage_image_user_msg(staged: list[dict]) -> None:
+        if not staged:
+            return
+        parts: list[dict] = []
+        for im in staged:
+            if im.get("text"):
+                parts.append({"type": "text", "text": im["text"]})
+            parts.append({
+                "type": "image_url",
+                "image_url": {"url": f"data:{im['image_mime']};base64,{im['image_b64']}"},
+            })
+        messages.append({"role": "user", "content": parts})
+
     turn = 0
     for turn in range(1, max_turns + 1):
         try:
-            reply = client.chat(
+            resp = client.chat(
                 model=model_slug,
                 messages=messages,
                 provider=provider,
+                tools=TOOL_SCHEMAS if use_fc else None,
             )
+        except ToolsUnsupported as e:
+            # Provider has no native function-calling. Switch to text protocol
+            # and restart the rollout (only happens on turn 1, before any
+            # tool/assistant messages have accumulated).
+            _log(f"turn={turn} tools_unsupported -> text mode ({str(e)[:80]})")
+            use_fc = False
+            messages = [
+                {"role": "system", "content": SYSTEM_PROMPT_TEXT},
+                {"role": "user",   "content": instruction},
+            ]
+            continue
         except Exception as e:
             stop = f"api_error:{str(e)[:80]}"
             _log(f"turn={turn} {stop}")
             break
 
-        messages.append({"role": "assistant", "content": reply})
-        call = parse_tool_call(reply)
+        tool_calls = resp.get("tool_calls") or []
+        content = resp.get("content") or ""
+        finish = resp.get("finish_reason")
+
+        # ---- Native function-calling path -----------------------------------
+        if use_fc and tool_calls:
+            last_error_streak = 0
+            messages.append({
+                "role": "assistant",
+                "content": content or None,
+                "tool_calls": [
+                    {"id": tc["id"], "type": "function",
+                     "function": {"name": tc["name"], "arguments": tc["arguments"]}}
+                    for tc in tool_calls
+                ],
+            })
+            staged: list[dict] = []
+            for tc in tool_calls:
+                out = _run_tool(tc["name"], tc["arguments"])
+                if isinstance(out, dict):  # view_image
+                    messages.append({"role": "tool", "tool_call_id": tc["id"],
+                                     "content": out.get("text", "(image attached below)")})
+                    if out.get("image_b64"):
+                        staged.append(out)
+                else:
+                    messages.append({"role": "tool", "tool_call_id": tc["id"],
+                                     "content": str(out)})
+                _log(f"turn={turn} tool={tc['name']} ok cost_usd={client.cost_usd:.4f}")
+            _stage_image_user_msg(staged)
+            if state.get("done"):
+                stop = "write_submission"
+                break
+            strip_old_images(messages, image_window)
+            continue
+
+        # ---- Text fallback path (also covers FC replies with no tool_calls) -
+        messages.append({"role": "assistant", "content": content})
+        call = parse_tool_call(content)
         if call is None:
             last_error_streak += 1
-            _log(f"turn={turn} no_tool_call (streak={last_error_streak})")
+            preview = " ".join(content.split())[:300]
+            _log(f"turn={turn} no_tool_call (streak={last_error_streak}) finish={finish} reply={preview!r}")
             if last_error_streak >= MAX_ERRORS:
                 stop = "no_tool_call_x5"
                 break
-            messages.append({"role": "user",
-                             "content": 'Your last reply was not a valid tool call. Reply with ONLY one JSON object: {"tool":"<name>","args":{...}}.'})
+            nudge = ("Make a tool call to proceed." if use_fc else
+                     'End your reply with one JSON tool call: {"tool":"<name>","args":{...}}.')
+            messages.append({"role": "user", "content": nudge})
             continue
         last_error_streak = 0
         tool, args = call
-
-        fn = DISPATCH[tool]
-        result = fn(args, ws, state)
-
-        # Build the next user message from the tool result.
+        result = _run_tool(tool, args)
         if isinstance(result, dict):
             parts = []
             if result.get("text"):
                 parts.append({"type": "text", "text": result["text"]})
             if result.get("image_b64"):
-                parts.append({
-                    "type": "image_url",
-                    "image_url": {
-                        "url": f"data:{result['image_mime']};base64,{result['image_b64']}"
-                    },
-                })
+                parts.append({"type": "image_url", "image_url": {
+                    "url": f"data:{result['image_mime']};base64,{result['image_b64']}"}})
             messages.append({"role": "user", "content": parts})
         else:
             messages.append({"role": "user", "content": [{"type": "text", "text": str(result)}]})
-
         _log(f"turn={turn} tool={tool} ok cost_usd={client.cost_usd:.4f}")
-
         if state.get("done"):
             stop = "write_submission"
             break
-
         strip_old_images(messages, image_window)
 
     # Score
@@ -236,6 +317,7 @@ def run_task(
         "saguaro_id": sid,
         "model_tag": model_tag,
         "model_slug": model_slug,
+        "tool_mode": "fc" if use_fc else "text",
         "submission_raw": submission_raw,
         "cell_accuracy_reward": reward_json.get("cell_accuracy_reward", 0.0),
         "base_cell_accuracy": reward_json.get("base_cell_accuracy", 0.0),

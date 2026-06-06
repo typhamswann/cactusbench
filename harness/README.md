@@ -107,15 +107,24 @@ each tag. The six pre-configured models match the WanderBench run:
 | `gemma4_26b` | `google/gemma-4-26b-a4b` | (let OR pick) |
 
 **Verify slugs** at https://openrouter.ai/models before running —
-provider naming drifts between releases. The `gemma4_26b` slug
-specifically is a guess; cross-check it.
+provider naming drifts between releases.
 
 ## Notes / caveats
 
-- The tool-call protocol is JSON-only (one tool per turn) rather than
-  provider-native function calling, so weaker/less-tuned models are
-  more likely to drop into prose. The harness gives the model 5
-  consecutive prose replies before giving up (`stop = no_tool_call_x5`).
+- The harness uses **native function-calling** by default: the four tools
+  are passed via OpenRouter's `tools=` parameter and the model emits
+  structured `tool_calls`, exactly like SWE-agent's FunctionCallingParser /
+  mini-swe-agent. OpenRouter normalizes every backend's native tool dialect
+  (Gemma's special tokens, Gemini's format, etc.) into the same shape, so
+  results are comparable across providers. Each result records
+  `tool_mode: "fc"`.
+- If a provider has no function-calling support, the harness catches the
+  tool-related 400 and transparently restarts that rollout in a **text
+  protocol** (ReAct-style: reason, then emit one JSON tool call), recorded
+  as `tool_mode: "text"`. A model gets 5 consecutive no-tool replies before
+  `stop = no_tool_call_x5`.
+- `max_tokens` defaults to 8192 so a long reasoning trace plus a large
+  multi-row JSON submission don't get truncated mid-call (`finish=length`).
 - Images are sent as base64 data URLs in the user message — that's the
   most portable across OpenRouter providers. The `--image-window` flag
   caps how many images stay attached at once.
