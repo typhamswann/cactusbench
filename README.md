@@ -1,26 +1,30 @@
 # [SaguaroBench](https://github.com/typhamswann/saguaro-bench)
 
 SaguaroBench is a benchmark for measuring multimodal language models on a
-real-world citizen-science **curation** task: reading hand-written volunteer
-field forms and field photos, then producing the cleaned, cross-year-matched
-arm-measurement table that the human curator would have produced.
+real-world citizen-science **curation** task: reading hand-written field
+forms and field photos, then producing the cleaned, cross-year-matched
+arm-measurement table that a human curator would have produced.
 
-Volunteers measure saguaro cacti every few years on the same plot. They
+Biologists measure saguaro cacti every few years on the same plot. They
 record per-arm measurements (direction, base height, tip height, arm
 length, recorder notes) on paper field-forms, numbering each saguaro's
 arms independently each visit. A curator then takes both years' raw
 sheets + photos and produces one cleaned spreadsheet: matched arms
 across years, canonical arm numbers, every measurement and note
-re-keyed into the canonical schema.
+re-keyed into the canonical schema — and quietly QA/QCs the data,
+correcting field mistakes against what the recorder clearly intended.
 
 This benchmark turns that curator workflow into a 25-task evaluation.
-Each task is one saguaro from plot 41B: the agent gets two hand-redacted
-volunteer field forms and a handful of field photos with **opaque
-filenames** (the agent doesn't know which sheet is 2023 vs 2026 from the
-path — it has to read the date header), and must produce the full
-canonical-arm table as `submission.json`. **Scoring is per-cell with
-field-typed tolerances**, so every measurement and every recorder-note
-contributes independently to the reward.
+Each task is one saguaro from plot 41B. The agent gets two field forms
+and a handful of field photos under **opaque filenames** — it is told
+neither the saguaro id, which sheet is which year, nor how many arms
+exist. It must derive all of that from the sheets and photos, then write
+the full cleaned table to `submission.json`. The convention (per the
+curator): the 2023 paper-arm numbers ARE the canonical arm labels, and
+each 2026 arm is re-keyed to the canonical number of the 2023 arm it
+matches. **Scoring is per-cell with field-typed tolerances**, so every
+measurement and every recorder-note contributes independently to the
+reward.
 
 ## Task format
 
@@ -31,9 +35,12 @@ file to a known path — there is no benchmark-specific CLI to learn:
 ```text
 task.toml          Metadata: saguaro_id, plot, split, difficulty,
                    redaction status, row/photo counts, resource limits
-instruction.md     Short pointer at brief.md
-brief.md           Task statement + opaque asset inventory + output
-                   schema + per-year canonical-arm count
+instruction.md     THE prompt — task statement + measurement-column
+                   reference + opaque asset inventory + output schema +
+                   canonical-numbering convention + QA/QC mandate. One file,
+                   near-identical across tasks; the only per-task variation
+                   is the photo count. (DeepSWE shape: the task is pure
+                   prompt content; the agent supplies its own system prompt.)
 assets/            Bundled into /workspace/ at build time, with OPAQUE names
   datasheets/      sheet_A.png, sheet_B.png — one is 2023, one is 2026
   photos/          photo_001.jpg, photo_002.jpg, ... — mixed years
@@ -53,11 +60,10 @@ Inside the container the agent works in `/workspace/`:
 
 ```
 /workspace/
-├── instruction.md              short pointer to brief.md
-├── brief.md                    full task statement + I/O contract
+├── instruction.md              the full task prompt + I/O contract
 ├── datasheets/
-│   ├── sheet_A.png             hand-redacted volunteer field form (year unknown from filename)
-│   └── sheet_B.png             hand-redacted volunteer field form (year unknown from filename)
+│   ├── sheet_A.png             hand-redacted field form (year unknown from filename)
+│   └── sheet_B.png             hand-redacted field form (year unknown from filename)
 ├── photos/
 │   ├── photo_001.jpg           field photo, year unknown
 │   ├── photo_002.jpg           ...
@@ -90,11 +96,14 @@ no view buffer, no tool-call indirection. This matches
 }
 ```
 
-Output one row per `(year, canonical_arm)`. The brief lists which
-canonical arm numbers exist per year for this saguaro — but it does NOT
-say which paper-arm in either year corresponds to which canonical arm.
-That's what the agent has to figure out by matching arm direction +
-measurements + photos across the two sheets.
+Output one row per `(year, canonical_arm)`. The prompt does **not** list
+how many arms exist, the saguaro id, or which sheet is which year — the
+agent derives all of that. Canonical numbering follows the curator
+convention: the 2023 paper-arm numbers are the canonical labels, and each
+2026 arm takes the canonical number of the 2023 arm it matches (new
+2026-only arms continue the numbering). The agent also QA/QCs: where a
+field measurement is clearly a recording slip, the curated value may
+diverge from the literal sheet to reflect what the recorder intended.
 
 ## Scoring
 
@@ -202,7 +211,7 @@ harbor run -p saguaro-bench/tasks/41B-13 --agent <agent>      # one task
 ```bash
 docker build -t sab-task -f tasks/41B-13/environment/Dockerfile tasks/41B-13
 docker run --rm sab-task bash -c '
-  cat instruction.md brief.md
+  cat instruction.md
   ls datasheets photos
 '
 # Then grade a submission (root mode since /grade is locked):
@@ -222,7 +231,7 @@ truth.
 ## Dataset
 
 - **Plot:** 41B (Saguaro National Park, Arizona). The same plot was
-  re-measured by volunteers in 2023 and 2026.
+  re-measured by biologists in 2023 and 2026.
 - **Saguaros:** 25, each appearing in both years. **237 scored truth
   rows** + **2 excluded rows** (genuinely ambiguous arm-4 geometry on
   saguaro 41B-06, both years — flagged in `data/curation_dataset_v2.json`).
@@ -236,7 +245,7 @@ truth.
   falls back to an auto-redacted version (flagged in its `task.toml`
   as `metadata.redaction_status_2026 = "auto"`).
 - **Photos:** 209 field photos (0–13 per saguaro). 2 saguaros have no
-  photos (volunteer didn't take any); the brief flags this.
+  photos (recorder didn't take any); the prompt flags this.
 - **Note overrides:** 14 truth rows have paper-faithful note overrides
   surfaced during curation QA (list-of-acceptable phrasings to handle
   recorder variation, ambiguous placement, etc.).
@@ -253,7 +262,7 @@ of the curator's canonical-arm renumbering, giving a partial shortcut.
 The hand-redacted set used here is a careful pass over each sheet by
 the curator, removing every marginal canonical number and stamp that
 leaked the answer. The curation task can only be solved by actually
-reading the volunteer's handwriting.
+reading the recorder's handwriting.
 
 ### Why opaque filenames?
 
@@ -272,13 +281,12 @@ saguaro-bench/
 ├── scripts/
 │   ├── build_tasks.py    Regenerate tasks/ from saguaro_arm_matching_env
 │   └── lib/
-│       ├── brief.py      build_brief — renders brief.md per task
+│       ├── brief.py      build_instruction — renders instruction.md per task
 │       └── score.py      Canonical per-cell scorer (copied verbatim per task)
 └── tasks/
     ├── INDEX.json        Summary across all tasks
     └── <saguaro_id>/     One per saguaro (25 total)
         ├── instruction.md
-        ├── brief.md
         ├── task.toml
         ├── assets/{datasheets,photos}/   opaque filenames
         ├── grade/{truth.json, score.py}  root-locked

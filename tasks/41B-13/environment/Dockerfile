@@ -7,7 +7,7 @@ RUN mkdir -p /workspace/datasheets /workspace/photos
 
 COPY assets/datasheets/  /workspace/datasheets/
 COPY assets/photos/      /workspace/photos/
-COPY brief.md instruction.md /workspace/
+COPY instruction.md /workspace/
 
 # Verifier-only data: ground truth + scorer + opaque->true-year map.
 # Root-owned, mode 0700 so the agent user cannot read it.

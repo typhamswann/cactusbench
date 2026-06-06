@@ -4,9 +4,12 @@ For each saguaro in the v1 25-saguaro 41B set, this writes:
 
     tasks/<sid>/
         task.toml                 Harbor schema
-        instruction.md            short pointer to brief.md
-        brief.md                  task statement + opaque asset inventory +
-                                  output schema + per-year canonical arm count
+        instruction.md            THE prompt — single file with task
+                                  statement + domain background + opaque asset
+                                  inventory + output schema + canonical
+                                  numbering rules + per-year arm schedule +
+                                  scoring. DeepSWE-shape (one prompt per task,
+                                  the agent provides its own system prompt).
         assets/
             datasheets/
                 sheet_A.png       hand-redacted (v2) — opaque (year hidden)
@@ -70,7 +73,7 @@ TASKS_DIR = REPO_ROOT / "tasks"
 LIB_DIR = REPO_ROOT / "scripts" / "lib"
 
 sys.path.insert(0, str(LIB_DIR))
-from brief import build_brief  # noqa: E402
+from brief import build_instruction  # noqa: E402
 
 # Tolerances baked into each task's truth.json. Mirrors saguaro_curation/rubric.py.
 SCORED_FIELDS = ["saguaro_id", "direction", "A", "B", "C", "D", "E", "note"]
@@ -120,24 +123,6 @@ def pick_sheet(sid: str, year: int, sheet_map: dict, hand_redacted_dir: Path) ->
 def fallback_v1_sheet(sid: str, year: int, source_repo: Path) -> Path | None:
     p = source_repo / "data" / "assets" / "datasheets" / f"{sid}_{year}.png"
     return p if p.exists() else None
-
-
-INSTRUCTION_TEMPLATE = """\
-Read `/workspace/brief.md` for the full task statement, input inventory,
-output schema, and scoring rules.
-
-In short: this saguaro has been measured in two surveys (one 2023, one
-2026). Hand-redacted volunteer field forms are in `/workspace/datasheets/`
-under **opaque filenames** (sheet_A.png, sheet_B.png — you must read the
-date header to determine which is which year). Field photos are in
-`/workspace/photos/` under opaque filenames (photo_001.jpg, ...).
-
-Produce the cleaned, cross-year-matched table as a JSON list at
-`/workspace/submission.json`. Per-cell scoring with field-typed tolerances
-(±1° on direction, ±0.011 m on A/B/C/D/E, word-set Jaccard ≥0.5 on note).
-
-Difficulty: **{difficulty}** ({split} split).
-"""
 
 
 def write_task(sid: str, v1_record: dict, v2_record: dict, source_repo: Path,
@@ -201,39 +186,15 @@ def write_task(sid: str, v1_record: dict, v2_record: dict, source_repo: Path,
             "source_file": src.name,
         }
 
-    # ---- brief.md ----------------------------------------------------------
-    # Compute per-year canonical arms (sorted) from v2 truth_rows, EXCLUDING
-    # _excluded rows from the visible schedule (they're skipped by scoring
-    # and the agent shouldn't know which arms are excluded).
-    arms_by_year: dict[int, list[str]] = {}
-    n_excluded = 0
-    for tr in v2_record["truth_rows"]:
-        if tr.get("_excluded"):
-            n_excluded += 1
-            continue
-        arms_by_year.setdefault(int(tr["year"]), []).append(str(tr["arm"]))
-    for y in arms_by_year:
-        # Numeric-aware sort.
-        def _k(a):
-            try:
-                return (0, int(a))
-            except ValueError:
-                return (1, a)
-        arms_by_year[y].sort(key=_k)
-
-    (task_dir / "brief.md").write_text(build_brief(
-        saguaro_id=sid,
-        n_sheets=2,
-        n_photos=len(raw_photos),
-        canonical_arms_per_year=arms_by_year,
-        n_excluded=n_excluded,
-    ))
-
-    # ---- instruction.md ---------------------------------------------------
+    # ---- instruction.md (THE prompt — single file, DeepSWE-shape) ----------
+    # The prompt is near-identical across all tasks: the agent is told neither
+    # the saguaro id, the per-year arm schedule, nor the scoring rules. It must
+    # derive the saguaro id, the canonical numbering, and the row set itself.
+    # The only per-task substitution is the photo count.
+    n_excluded = sum(1 for tr in v2_record["truth_rows"] if tr.get("_excluded"))
     diff = v1_record["ground_truth"].get("difficulty", "unknown")
-    (task_dir / "instruction.md").write_text(INSTRUCTION_TEMPLATE.format(
-        difficulty=diff,
-        split=v1_record.get("split", "unknown"),
+    (task_dir / "instruction.md").write_text(build_instruction(
+        n_photos=len(raw_photos),
     ))
 
     # ---- grade/truth.json + grade/score.py --------------------------------
@@ -329,7 +290,7 @@ RUN mkdir -p /workspace/datasheets /workspace/photos
 
 COPY assets/datasheets/  /workspace/datasheets/
 COPY assets/photos/      /workspace/photos/
-COPY brief.md instruction.md /workspace/
+COPY instruction.md /workspace/
 
 # Verifier-only data: ground truth + scorer + opaque->true-year map.
 # Root-owned, mode 0700 so the agent user cannot read it.

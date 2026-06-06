@@ -46,7 +46,7 @@ describing the workspace + the four available tools, then loops:
 2. Parse the assistant reply as JSON `{"tool": "<name>", "args": {...}}`.
 3. Dispatch to the host-side handler:
    - `list_dir` — directory listing under `/workspace`
-   - `read_text` — read a text file (instruction.md, brief.md)
+   - `read_text` — read a text file (e.g. instruction.md)
    - `view_image` — base64-encode an image; attached to the next user message
    - `write_submission` — write `/workspace/submission.json` and end the task
 4. Append the tool result as a user message (text + optional image).

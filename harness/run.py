@@ -11,13 +11,14 @@ apples cross-benchmark comparisons are easy:
 - Results written to runs/<run_id>/<model_tag>.json incrementally so a kill
   mid-run leaves resumable state.
 
-Workspace contract per task (matches DeepSWE-style v0.2 task images):
+Workspace contract per task (matches the v0.3 curation task images):
 
     /workspace/
-        instruction.md
-        brief.md
-        datasheets/{2023,2026}.png
-        photos/{2023,2026}/photo_<N>.jpg
+        instruction.md            THE prompt — delivered verbatim as the first
+                                  user message; the harness system prompt is
+                                  agent-shape (tools/protocol) only
+        datasheets/sheet_{A,B}.png   opaque (year hidden; read the date header)
+        photos/photo_<NNN>.jpg       opaque (year hidden, mixed)
         submission.json    ← the agent writes this; score.py reads it
 
 We don't build the docker images at runtime — the assets already live on
@@ -52,74 +53,31 @@ from tools import DISPATCH, parse_tool_call, ALLOWED
 
 
 # -----------------------------------------------------------------------------
-# System prompt — tool list + protocol. The model sees this once.
+# System prompt — agent shape ONLY (tools + protocol). All task/domain content
+# lives in the task's instruction.md, which is delivered verbatim as the first
+# user message (DeepSWE convention: the task is pure prompt content; the agent
+# supplies its own system prompt). The model sees the system prompt once.
 # -----------------------------------------------------------------------------
 
 SYSTEM_PROMPT = """\
-You are curating saguaro cactus arm measurements from two citizen-science survey years (2023 and 2026) on the same plant.
+You are an autonomous agent working inside a Unix workspace at /workspace/. You
+complete the task described in the first user message by issuing tool calls.
 
-Volunteers measured the saguaro on paper field-forms, numbering each year's arms independently. A human curator then matches arms across years (same physical arm = same canonical number) and produces a single cleaned table — one row per (year, canonical_arm) — with every measurement and recorder-note re-keyed into the canonical schema. Your job is to produce that cleaned table.
-
-Measurement columns (per arm, per year):
-- direction: compass bearing from main stem out to the arm, in degrees (0=N, 90=E, 180=S, 270=W).
-- A: height in meters from the ground to where the arm emerges from the main stem.
-- B: height in meters from the ground to a 1 m datum mark on the stem near where A was measured.
-- C: height from the ground to the tip of the arm.
-- D: height from the ground to a 1 m datum mark on the stem near where C was measured.
-- E: horizontal distance in meters from the main stem to the arm tip.
-- note: recorder annotation (e.g. "5 nubbins", "arm broke off", "tag 69"). Use "" if none.
-
-Biological constraints: saguaro arms grow slowly. They rarely shrink. New arms emerge between surveys; existing arms only rarely disappear.
-
-# Your environment
-
-Your workspace is /workspace/. The relevant files are:
-- /workspace/instruction.md         short pointer at brief.md
-- /workspace/brief.md               full task statement + opaque-asset inventory + I/O schema + per-year canonical-arm list
-- /workspace/datasheets/sheet_A.png  hand-redacted volunteer field form — year UNKNOWN from filename; read the date header
-- /workspace/datasheets/sheet_B.png  the OTHER year, also hand-redacted
-- /workspace/photos/photo_001.jpg   field photo (year unknown, mixed)
-- /workspace/photos/photo_NNN.jpg   ...
-
-# Protocol
-
-Emit EXACTLY ONE tool call per turn as JSON and nothing else:
+Emit EXACTLY ONE tool call per turn as a single JSON object and nothing else:
 
     {"tool": "<name>", "args": {...}}
 
 Tools:
-- list_dir({"path": "<dir>"})
-    Return a directory listing.
-- read_text({"path": "<file>"})
-    Return the contents of a text file (e.g. instruction.md, brief.md).
-- view_image({"path": "<file>"})
-    Stage an image so it appears (base64-attached) in the NEXT user message.
-- write_submission({"content": "<json string>"})
-    Write your final cleaned table as a JSON STRING to /workspace/submission.json
-    and end the task. `content` must be a JSON LIST of row objects. Each row:
-      {"saguaro_id": "<sid>", "year": <2023 or 2026>, "arm": "<canonical-number-string>",
-       "direction": <number>, "A": <number>, "B": <number>, "C": <number>,
-       "D": <number>, "E": <number>, "note": "<string>"}
-    Produce one row per (year, canonical_arm) listed in the brief's row
-    schedule. Canonical arm numbers identify the SAME physical arm across
-    years — the volunteer's paper-arm numbers DO NOT match canonical.
+- list_dir({"path": "<dir>"})            — list a directory.
+- read_text({"path": "<file>"})          — return a text file's contents.
+- view_image({"path": "<file>"})         — attach an image (base64) to the NEXT
+                                           user message so you can see it.
+- write_submission({"content": "<str>"}) — write <content> verbatim to
+                                           /workspace/submission.json and end
+                                           the task. Call this exactly once,
+                                           when your answer is ready.
 
-Recommended workflow:
-1. read_text /workspace/instruction.md
-2. read_text /workspace/brief.md
-3. list_dir /workspace/photos      (see how many photos there are)
-4. view_image both datasheets to determine which is 2023 vs 2026
-5. Examine photos via view_image as needed to disambiguate arm matching
-6. write_submission(...) with the full canonical-arm table
-
-Output ONLY the JSON tool call. No prose before or after."""
-
-
-INITIAL_USER = """\
-Start curating saguaro {sid}. The full task statement is at
-/workspace/instruction.md and the per-task brief (asset inventory +
-per-year canonical-arm list + I/O schema) is at /workspace/brief.md.
-Emit your first tool call."""
+Output ONLY the JSON tool call — no prose before or after it."""
 
 
 # -----------------------------------------------------------------------------
@@ -133,7 +91,6 @@ def setup_workspace(task_dir: Path) -> Path:
     """
     ws = Path(tempfile.mkdtemp(prefix="sb_ws_"))
     shutil.copyfile(task_dir / "instruction.md", ws / "instruction.md")
-    shutil.copyfile(task_dir / "brief.md",       ws / "brief.md")
     src_sheets = task_dir / "assets" / "datasheets"
     (ws / "datasheets").mkdir()
     for f in sorted(src_sheets.iterdir()):
@@ -181,9 +138,10 @@ def run_task(
     ws = setup_workspace(task_dir)
     state: dict = {"images_viewed": [], "done": False, "submission_path": None}
 
+    instruction = (task_dir / "instruction.md").read_text()
     messages: list[dict] = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user",   "content": INITIAL_USER.format(sid=sid)},
+        {"role": "user",   "content": instruction},
     ]
 
     started = time.time()
@@ -266,10 +224,19 @@ def run_task(
             "structural_error": f"scoring_subprocess_error: {e}",
         }
 
+    # Capture the raw submission the agent wrote, for offline inspection.
+    submission_raw = None
+    try:
+        if sub_path.exists():
+            submission_raw = sub_path.read_text()[:20000]
+    except Exception:
+        pass
+
     rec = {
         "saguaro_id": sid,
         "model_tag": model_tag,
         "model_slug": model_slug,
+        "submission_raw": submission_raw,
         "cell_accuracy_reward": reward_json.get("cell_accuracy_reward", 0.0),
         "base_cell_accuracy": reward_json.get("base_cell_accuracy", 0.0),
         "extra_row_penalty": reward_json.get("extra_row_penalty", 0.0),
@@ -345,6 +312,10 @@ def main() -> int:
                     help="abort a model once its running OpenRouter cost exceeds this (USD)")
     ap.add_argument("--run-id", default=None,
                     help="run identifier (default: timestamp). results land at runs/<run-id>/")
+    ap.add_argument("--resume", default=None,
+                    help="resume a prior run by run-id. Loads existing results from "
+                         "runs/<resume>/<model_tag>.json, skips saguaros already scored, "
+                         "appends new ones to the SAME file. --run-id is ignored when set.")
     ap.add_argument("--registry", default=str(HERE / "models.json"))
     args = ap.parse_args()
 
@@ -361,20 +332,25 @@ def main() -> int:
     models = _expand_models(args.models, registry)
     tasks = _expand_tasks(args.tasks)
 
-    run_id = args.run_id or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
+    resuming = args.resume is not None
+    run_id = args.resume or args.run_id or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
     runs_dir = REPO / "runs" / run_id
+    if resuming and not runs_dir.exists():
+        raise SystemExit(f"--resume {args.resume!r}: runs dir {runs_dir} not found")
     runs_dir.mkdir(parents=True, exist_ok=True)
-    (runs_dir / "config.json").write_text(json.dumps({
-        "run_id": run_id,
-        "started_at": datetime.now(timezone.utc).isoformat(),
-        "models": [{"tag": t, "slug": s, "provider": p} for (t, s, p) in models],
-        "tasks": [t.name for t in tasks],
-        "max_turns": args.max_turns,
-        "image_window": args.image_window,
-        "cost_cap": args.cost_cap,
-    }, indent=2))
+    if not resuming:
+        (runs_dir / "config.json").write_text(json.dumps({
+            "run_id": run_id,
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "models": [{"tag": t, "slug": s, "provider": p} for (t, s, p) in models],
+            "tasks": [t.name for t in tasks],
+            "max_turns": args.max_turns,
+            "image_window": args.image_window,
+            "cost_cap": args.cost_cap,
+        }, indent=2))
 
-    print(f"[run] id={run_id}  models={[m[0] for m in models]}  n_tasks={len(tasks)}", flush=True)
+    print(f"[run] id={run_id}  models={[m[0] for m in models]}  n_tasks={len(tasks)}"
+          f"{'  (RESUMING)' if resuming else ''}", flush=True)
 
     for (tag, slug, provider) in models:
         client = OpenRouterClient(api_key=api_key)
@@ -383,7 +359,28 @@ def main() -> int:
         out_path = runs_dir / f"{tag}.json"
         log_path = runs_dir / f"{tag}.log"
 
+        # ---- Resume: load already-completed results, skip those saguaros ----
+        done_sids: set = set()
+        if resuming and out_path.exists():
+            try:
+                prior = json.loads(out_path.read_text())
+                results = prior.get("results", [])
+                done_sids = {r["saguaro_id"] for r in results if r.get("saguaro_id")}
+                client.cost_usd = float(prior.get("cost_usd", 0.0))
+                client.calls = int(prior.get("calls", 0))
+                client.served_providers = set(prior.get("served_providers", []))
+                print(f"[{tag}] resuming: {len(done_sids)} already scored, "
+                      f"prior cost ${client.cost_usd:.3f}", flush=True)
+            except Exception as e:
+                print(f"[{tag}] WARN: failed to load prior {out_path}: {e}", flush=True)
+                results = []
+                done_sids = set()
+
         for i, task_dir in enumerate(tasks, 1):
+            if task_dir.name in done_sids:
+                print(f"[{tag}] task {i}/{len(tasks)}: {task_dir.name}  [SKIP — already scored]",
+                      flush=True)
+                continue
             if args.cost_cap and client.cost_usd >= args.cost_cap:
                 print(f"[{tag}] cost cap ${args.cost_cap:.2f} reached at "
                       f"${client.cost_usd:.4f} — skipping remaining {len(tasks)-i+1} tasks",

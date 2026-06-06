@@ -127,6 +127,18 @@ def _note_match(pred: Any, truth: Any) -> bool:
 _SAGUARO_ID_RE = re.compile(r"^([A-Za-z0-9]+)-?(.+)$")
 
 
+def _strip_leading_zeros(tok: str) -> str:
+    """Normalize the integer prefix of a token, preserving any alpha suffix.
+    "09" -> "9", "01A" -> "1A", "10A" -> "10A", "13" -> "13", "new" -> "new".
+    Zero-padding is a cosmetic transcription choice (the recorder writes "9",
+    the workbook may store "09"); it must not affect identity.
+    """
+    m = re.match(r"^(\d+)(.*)$", tok)
+    if not m:
+        return tok
+    return str(int(m.group(1))) + m.group(2)
+
+
 def _canon_saguaro_id(s: Any) -> str:
     if s is None:
         return ""
@@ -134,11 +146,14 @@ def _canon_saguaro_id(s: Any) -> str:
     m = _SAGUARO_ID_RE.match(s)
     if m:
         plot, rest = m.group(1), m.group(2).strip()
+        # Plot: strip leading zeros if purely numeric ("06" -> "6").
         try:
             plot = str(int(plot))
         except ValueError:
             pass
-        rest = rest.upper()
+        # Saguaro number: strip leading zeros from the integer prefix, keep any
+        # alpha suffix, uppercase it ("09" -> "9", "01a" -> "1A").
+        rest = _strip_leading_zeros(rest.upper())
         return f"{plot}-{rest}"
     return s
 
@@ -160,16 +175,39 @@ def _field_match(field: str, pred: Any, truth: Any, tolerances: dict) -> bool:
 # ---------------------------------------------------------------------------
 # Key + submission parsing
 # ---------------------------------------------------------------------------
+def _canon_arm(a: Any) -> str:
+    """Normalize an arm label for keying: strip leading zeros from a numeric
+    arm ("01" -> "1") so cosmetic padding doesn't break row matching."""
+    return _strip_leading_zeros(str(a).strip().upper())
+
+
 def _row_key(row: dict) -> tuple:
-    return (_canon_saguaro_id(row.get("saguaro_id")), int(row["year"]), str(row["arm"]))
+    return (_canon_saguaro_id(row.get("saguaro_id")), int(row["year"]), _canon_arm(row.get("arm")))
 
 
 def _is_excluded(row: dict) -> bool:
     return bool(row.get("_excluded"))
 
 
+def _strip_code_fence(text: str) -> str:
+    """If the submission is wrapped in a ```/```json markdown fence, unwrap it.
+    Models routinely emit fenced JSON; tolerate it rather than scoring 0.
+    """
+    s = text.strip()
+    if s.startswith("```"):
+        # Drop the opening fence line (``` or ```json) and the trailing fence.
+        lines = s.split("\n")
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        s = "\n".join(lines).strip()
+    return s
+
+
 def parse_submission(text: str):
     """Returns (rows_list, error_str)."""
+    text = _strip_code_fence(text)
     try:
         obj = json.loads(text)
     except Exception as e:
