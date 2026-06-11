@@ -23,3 +23,6 @@ build/
 
 # OpenRouter harness run output
 /runs/
+
+# PRIVATE held-back test cycles drawn from the pool (contain truth — never commit)
+/tasks_test/

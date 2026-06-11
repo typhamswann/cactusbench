@@ -20,14 +20,15 @@ canonical arm labels; 2026 arms are re-keyed to the canonical number of the
 from __future__ import annotations
 
 
-def build_instruction(n_photos: int) -> str:
-    """Return the single per-task prompt. Only the photo count varies."""
+def build_instruction(n_photos: int, max_turns: int = 50) -> str:
+    """Return the single per-task prompt. Per-task variation is the photo count
+    only; ``max_turns`` is the published harness contract (declared in the prompt
+    so the agent can budget its tool calls — see docs/MANIFEST.md)."""
     if n_photos:
         photos_line = (
-            f"`/workspace/photos/` — {n_photos} field photo(s). Years are mixed "
-            "and not annotated. Photos help disambiguate arm matching when two "
-            "arms are at similar directions or when the digitized measurements "
-            "are inconclusive."
+            f"`/workspace/photos/` — {n_photos} field photo(s). Photos help "
+            "disambiguate arm matching when two arms are at similar directions "
+            "or when the digitized measurements are inconclusive."
         )
     else:
         photos_line = (
@@ -51,6 +52,8 @@ Each arm has, per year:
 - `D` — height from the ground to a 1-meter datum mark on the stem near where C was measured.
 - `E` — horizontal distance in meters from the main stem to the arm tip.
 - `note` — recorder annotation (e.g. "5 nubbins", "arm broke off", "tag 69"). Use `""` if none.
+
+Measurements are relative to the recorder's datum, which sets the "0" mark.
 
 Saguaro arms grow slowly. They rarely shrink. New arms can emerge between surveys; existing arms only rarely disappear.
 
@@ -77,9 +80,17 @@ E            number  — horizontal distance from main stem to arm tip, meters
 note         string  — recorder note (use "" if none)
 ```
 
-Example row: {{"saguaro_id": "41B-13", "year": 2023, "arm": "1", "direction": 360, "A": 1.89, "B": 0.98, "C": 2.04, "D": 0.98, "E": 0.2, "note": ""}}
+Example row (illustrative format only): {{"saguaro_id": "00X-00", "year": 2023, "arm": "1", "direction": 90, "A": 2.50, "B": 1.00, "C": 3.50, "D": 1.00, "E": 0.50, "note": ""}}
+
+Derive the `saguaro_id` (plot + saguaro number), the number of arms, and which sheet is which year **from the datasheets themselves** — none of these are given to you.
 
 You must return data which you think is accurate to the real world above all. Part of your job QA/QC, so your curated data may vary from what biologists record in the sheet if their recordings were inaccurate or a mistake was made.
+
+Order the arms by canonical arm number.
+
+## Working budget
+
+You have up to {max_turns} tool-call turns to inspect the sheets and photos and write `submission.json`. Budget them: read both datasheets and the photos you need, then write your final table once. The task ends when you write `submission.json`.
 """
 
 

@@ -22,14 +22,16 @@ Writes a JSON object on stdout. test.sh redirects it to
 Scoring (mirrors saguaro_curation/rubric.py from the source env):
 - Submission must parse as a list of dicts each with at least {saguaro_id, year, arm}.
   Accepts {"rows": [...]} wrapper, or {"submission": "<json-string>"} wrapper.
-- Truth rows are keyed by (saguaro_id_canonical, year, arm-string).
+- Truth rows are keyed by (year, arm-string) — one saguaro per task, so saguaro_id
+  is constant and scored as a cell, not part of the key (see _row_key).
 - _excluded rows are skipped entirely: their cells don't count and an extra
   submission at that key is not penalized.
 - For each non-excluded truth row, score per-cell:
     * direction: numeric ±1.0°
     * A, B, C, D, E: numeric ±0.011 m
-    * note: list-of-acceptable match OR Jaccard word-set similarity ≥0.5
-            (empty matches empty)
+    * note: normalized-exact match against the truth string OR any member of a
+            list-of-acceptable (empty matches empty). Jaccard is OFF the headline
+            reward and reported only as a diagnostic (note_accuracy_jaccard_diag).
     * saguaro_id: normalized string equality
 - Missing truth rows score 0 across all their cells.
 - "Extra" predicted rows (not in truth, not _excluded) incur 0.05 each penalty,
@@ -85,6 +87,20 @@ def _numeric_match(pred: Any, truth: Any, tol: float) -> bool:
         return False
 
 
+def _direction_match(pred: Any, truth: Any, tol: float) -> bool:
+    """Compass bearing is circular: 360° == 0° == North. Compare on the circle so
+    a model writing 0 for a truth of 360 (or 359 vs 1) is not falsely penalized."""
+    if truth is None and (pred is None or pred == ""):
+        return True
+    if truth is None or pred is None or pred == "":
+        return False
+    try:
+        diff = abs(float(pred) - float(truth)) % 360.0
+        return min(diff, 360.0 - diff) <= tol
+    except (TypeError, ValueError):
+        return False
+
+
 _STOPWORDS = frozenset({
     "a", "an", "the", "is", "are", "was", "were", "of", "to", "in", "on",
     "and", "or", "but", "with", "for", "at", "by", "from", "as", "that",
@@ -96,15 +112,26 @@ def _word_set(s: Any) -> set:
     return {w for w in _norm_str(s).split() if w and w not in _STOPWORDS}
 
 
-def _note_match_single(pred: Any, truth: Any) -> bool:
-    """Compare one predicted note against one truth note string."""
+def _note_match_single(pred: Any, truth: Any, *, use_jaccard: bool = False) -> bool:
+    """Compare one predicted note against one truth note string.
+
+    The headline reward uses normalized-exact matching only (``use_jaccard=False``):
+    truth notes that admit defensible recorder variation are stored as a
+    *list-of-acceptable* in the truth file, so the fuzzy Jaccard path is no longer
+    needed for the score and would only add a gameable rule to the headline (pad a
+    note with common tokens to clear 0.5). Jaccard is still available as an
+    OFF-headline diagnostic (``use_jaccard=True``) so we can report the gap between
+    the strict and fuzzy note metric. See guidance §9 / docs/MANIFEST.md.
+    """
     p_norm = _norm_str(pred)
     t_norm = _norm_str(truth)
     if p_norm == "" and t_norm == "":
         return True
     if p_norm == t_norm:
         return True
-    # Jaccard word-set ≥ 0.5 (ignoring stopwords)
+    if not use_jaccard:
+        return False
+    # Diagnostic-only: Jaccard word-set ≥ 0.5 (ignoring stopwords).
     p_words = _word_set(pred)
     t_words = _word_set(truth)
     if not p_words and not t_words:
@@ -115,13 +142,21 @@ def _note_match_single(pred: Any, truth: Any) -> bool:
     return j >= 0.5
 
 
-def _note_match(pred: Any, truth: Any) -> bool:
+def _note_match(pred: Any, truth: Any, *, use_jaccard: bool = False) -> bool:
     """Truth may be a string OR a list of acceptable strings. If list, any
     member matching counts.
     """
     if isinstance(truth, list):
-        return any(_note_match_single(pred, t) for t in truth)
-    return _note_match_single(pred, truth)
+        return any(_note_match_single(pred, t, use_jaccard=use_jaccard) for t in truth)
+    return _note_match_single(pred, truth, use_jaccard=use_jaccard)
+
+
+def _truth_note_is_empty(truth: Any) -> bool:
+    """True if the truth note is empty / absent. A list-of-acceptable counts as
+    non-empty if any member is non-empty."""
+    if isinstance(truth, list):
+        return not any(_norm_str(t) for t in truth)
+    return _norm_str(truth) == ""
 
 
 _SAGUARO_ID_RE = re.compile(r"^([A-Za-z0-9]+)-?(.+)$")
@@ -162,13 +197,16 @@ def _saguaro_id_match(pred: Any, truth: Any) -> bool:
     return _canon_saguaro_id(pred) == _canon_saguaro_id(truth)
 
 
-def _field_match(field: str, pred: Any, truth: Any, tolerances: dict) -> bool:
+def _field_match(field: str, pred: Any, truth: Any, tolerances: dict,
+                 *, use_jaccard_notes: bool = False) -> bool:
+    if field == "direction":
+        return _direction_match(pred, truth, tolerances.get("direction", 0.0))
     if field in NUMERIC_FIELDS:
         return _numeric_match(pred, truth, tolerances.get(field, 0.0))
     if field == "saguaro_id":
         return _saguaro_id_match(pred, truth)
     if field == "note":
-        return _note_match(pred, truth)
+        return _note_match(pred, truth, use_jaccard=use_jaccard_notes)
     return _norm_str(pred) == _norm_str(truth)
 
 
@@ -182,7 +220,14 @@ def _canon_arm(a: Any) -> str:
 
 
 def _row_key(row: dict) -> tuple:
-    return (_canon_saguaro_id(row.get("saguaro_id")), int(row["year"]), _canon_arm(row.get("arm")))
+    """Row identity for matching. Each SaguaroBench task is ONE saguaro, so the
+    key is (year, canonical_arm) — saguaro_id is constant within a task and is
+    scored as an ordinary cell instead. (The upstream batch env keyed by
+    saguaro_id because its submissions spanned many cacti; here that would make a
+    single constant id-slip zero the whole task — e.g. a model copying the
+    prompt's placeholder id onto every row — which is a disproportionate, fragile
+    penalty unrelated to the curation skill being measured.)"""
+    return (int(row["year"]), _canon_arm(row.get("arm")))
 
 
 def _is_excluded(row: dict) -> bool:
@@ -259,6 +304,14 @@ def cell_accuracy_reward(pred_rows, truth):
     # Per-field stats for diagnostics.
     per_field = {f: {"correct": 0, "total": 0} for f in scored_fields}
 
+    # Note diagnostics (guidance §9): 94% of truth notes are empty, so the raw
+    # note per-field accuracy mostly measures "did the model blank the field."
+    # Track note accuracy conditioned on NON-EMPTY truth notes, and what the note
+    # field would score under the (off-headline) Jaccard rule, so the gap is
+    # visible without ever putting Jaccard in the headline reward.
+    note_nonempty = {"correct": 0, "total": 0}
+    note_jaccard = {"correct": 0, "total": 0}  # over all note cells, fuzzy rule
+
     correct_total = 0
     total = 0
     for key, truth_row in truth_by_key.items():
@@ -266,11 +319,23 @@ def cell_accuracy_reward(pred_rows, truth):
         for field in scored_fields:
             total += 1
             per_field[field]["total"] += 1
-            if pred_row is None:
-                continue
-            if _field_match(field, pred_row.get(field), truth_row.get(field), tolerances):
+            matched = pred_row is not None and _field_match(
+                field, pred_row.get(field), truth_row.get(field), tolerances
+            )
+            if matched:
                 correct_total += 1
                 per_field[field]["correct"] += 1
+            if field == "note":
+                t_note = truth_row.get("note")
+                note_jaccard["total"] += 1
+                if pred_row is not None and _field_match(
+                    "note", pred_row.get("note"), t_note, tolerances, use_jaccard_notes=True
+                ):
+                    note_jaccard["correct"] += 1
+                if not _truth_note_is_empty(t_note):
+                    note_nonempty["total"] += 1
+                    if matched:
+                        note_nonempty["correct"] += 1
 
     base = correct_total / max(1, total)
     n_extra = len(set(pred_by_key) - set(truth_by_key) - excluded_keys)
@@ -302,6 +367,15 @@ def cell_accuracy_reward(pred_rows, truth):
         "per_field_accuracy": {
             f: round(s["correct"] / max(1, s["total"]), 6) for f, s in per_field.items()
         },
+        # Off-headline note diagnostics (do NOT feed cell_accuracy_reward):
+        "note_accuracy_nonempty": (
+            round(note_nonempty["correct"] / note_nonempty["total"], 6)
+            if note_nonempty["total"] else None
+        ),
+        "note_nonempty_total": note_nonempty["total"],
+        "note_accuracy_jaccard_diag": round(
+            note_jaccard["correct"] / max(1, note_jaccard["total"]), 6
+        ),
     }
 
 

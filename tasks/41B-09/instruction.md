@@ -39,6 +39,12 @@ E            number  — horizontal distance from main stem to arm tip, meters
 note         string  — recorder note (use "" if none)
 ```
 
-Example row: {"saguaro_id": "41B-13", "year": 2023, "arm": "1", "direction": 360, "A": 1.89, "B": 0.98, "C": 2.04, "D": 0.98, "E": 0.2, "note": ""}
+Example row (illustrative format only — NOT from this saguaro): {"saguaro_id": "00X-00", "year": 2023, "arm": "1", "direction": 90, "A": 2.50, "B": 1.00, "C": 3.50, "D": 1.00, "E": 0.50, "note": ""}
+
+Derive the `saguaro_id` (plot + saguaro number), the number of arms, and which sheet is which year **from the datasheets themselves** — none of these are given to you. The `00X-00` id and the numbers in the example above are placeholders to show the JSON shape; do not copy them.
 
 You must return data which you think is accurate to the real world above all. Part of your job QA/QC, so your curated data may vary from what biologists record in the sheet if their recordings were inaccurate or a mistake was made.
+
+## Working budget
+
+You have up to 50 tool-call turns to inspect the sheets and photos and write `submission.json`. Budget them: read both datasheets and the photos you need, then write your final table once. The task ends when you write `submission.json`.

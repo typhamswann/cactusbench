@@ -1,0 +1,215 @@
+{
+  "saguaro_id": "15-84",
+  "scored_fields": [
+    "saguaro_id",
+    "direction",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "note"
+  ],
+  "tolerances": {
+    "direction": 1.0,
+    "A": 0.011,
+    "B": 0.011,
+    "C": 0.011,
+    "D": 0.011,
+    "E": 0.011
+  },
+  "truth_rows": [
+    {
+      "saguaro_id": "15-84",
+      "year": 2023,
+      "arm": "1",
+      "direction": 5,
+      "A": 2.67,
+      "B": 1.01,
+      "C": 3.57,
+      "D": 1,
+      "E": 2.6,
+      "note": ""
+    },
+    {
+      "saguaro_id": "15-84",
+      "year": 2023,
+      "arm": "2",
+      "direction": 90,
+      "A": 2.61,
+      "B": 1.02,
+      "C": 3.13,
+      "D": 1.05,
+      "E": 0.4,
+      "note": ""
+    },
+    {
+      "saguaro_id": "15-84",
+      "year": 2023,
+      "arm": "3",
+      "direction": 150,
+      "A": 2.55,
+      "B": 1,
+      "C": 4.32,
+      "D": 1.01,
+      "E": 0.7,
+      "note": ""
+    },
+    {
+      "saguaro_id": "15-84",
+      "year": 2023,
+      "arm": "4",
+      "direction": 320,
+      "A": 2.65,
+      "B": 1.01,
+      "C": 3.96,
+      "D": 1,
+      "E": 0.6,
+      "note": ""
+    },
+    {
+      "saguaro_id": "15-84",
+      "year": 2026,
+      "arm": "1",
+      "direction": 23,
+      "A": 2.65,
+      "B": 0.96,
+      "C": 3.795,
+      "D": 0.93,
+      "E": 0.6,
+      "note": ""
+    },
+    {
+      "saguaro_id": "15-84",
+      "year": 2026,
+      "arm": "2",
+      "direction": 69,
+      "A": 2.61,
+      "B": 0.97,
+      "C": 3.37,
+      "D": 1,
+      "E": 0.45,
+      "note": ""
+    },
+    {
+      "saguaro_id": "15-84",
+      "year": 2026,
+      "arm": "3",
+      "direction": 168,
+      "A": 2.55,
+      "B": 0.935,
+      "C": 4.535,
+      "D": 0.94,
+      "E": 0.6,
+      "note": ""
+    },
+    {
+      "saguaro_id": "15-84",
+      "year": 2026,
+      "arm": "4",
+      "direction": 331,
+      "A": 2.64,
+      "B": 0.94,
+      "C": 4.19,
+      "D": 0.94,
+      "E": 0.6,
+      "note": ""
+    },
+    {
+      "saguaro_id": "15-84",
+      "year": 2026,
+      "arm": "5",
+      "direction": 122,
+      "A": 2.67,
+      "B": 0.99,
+      "C": 2.725,
+      "D": 0.97,
+      "E": 0.05,
+      "note": [
+        "",
+        "Nubbin - About the size of a flat baseball (Nubbin is fairly flat)",
+        "About the size of a flat baseball (Nubbin is fairly flat)",
+        "About the size of a flat baseball"
+      ]
+    },
+    {
+      "saguaro_id": "15-84",
+      "year": 2026,
+      "arm": "5",
+      "direction": 100,
+      "A": 2.68,
+      "B": 1.035,
+      "C": 2.745,
+      "D": 1.035,
+      "E": 0.045,
+      "note": [
+        "",
+        "Nubbin - About the size of a flat baseball (Nubbin is fairly flat)",
+        "About the size of a flat baseball (Nubbin is fairly flat)",
+        "About the size of a flat baseball"
+      ]
+    }
+  ],
+  "_opaque_sheet_map": {
+    "sheet_A.png": {
+      "true_year": 2026,
+      "source_file": "pl-15_2026_60-88__p17.png",
+      "redaction_status": "hand"
+    },
+    "sheet_B.png": {
+      "true_year": 2023,
+      "source_file": "Pl-15_2023_62-88__p16.png",
+      "redaction_status": "hand"
+    }
+  },
+  "_opaque_photo_map": {
+    "photo_001.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_006.jpg"
+    },
+    "photo_002.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_004.jpg"
+    },
+    "photo_003.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_004.jpg"
+    },
+    "photo_004.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_001.jpg"
+    },
+    "photo_005.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_001.jpg"
+    },
+    "photo_006.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_003.jpg"
+    },
+    "photo_007.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_007.jpg"
+    },
+    "photo_008.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_002.jpg"
+    },
+    "photo_009.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_008.jpg"
+    },
+    "photo_010.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_003.jpg"
+    },
+    "photo_011.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_005.jpg"
+    },
+    "photo_012.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_002.jpg"
+    }
+  }
+}

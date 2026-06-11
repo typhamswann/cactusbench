@@ -19,6 +19,7 @@ from __future__ import annotations
 import base64
 import json
 import re
+import struct
 from pathlib import Path
 
 ALLOWED = {"list_dir", "read_text", "view_image", "write_submission"}
@@ -105,6 +106,90 @@ _IMG_MIME = {
 }
 
 
+def _image_dims(data: bytes, suffix: str) -> tuple[int | None, int | None]:
+    """Best-effort (width, height) from raw bytes, stdlib only. The image handoff
+    (resolution actually transmitted) is the dominant multimodal-harness variable
+    for a handwriting-legibility task (guidance §1/§3d) — record it per attachment.
+    """
+    s = suffix.lower()
+    try:
+        if s == ".png" and data[:8] == b"\x89PNG\r\n\x1a\n":
+            w, h = struct.unpack(">II", data[16:24])
+            return w, h
+        if s in (".jpg", ".jpeg") and data[:2] == b"\xff\xd8":
+            i, n = 2, len(data)
+            while i < n:
+                if data[i] != 0xFF:
+                    i += 1
+                    continue
+                marker = data[i + 1]
+                if marker in (0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7,
+                              0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF):  # SOFn
+                    h, w = struct.unpack(">HH", data[i + 5:i + 9])
+                    return w, h
+                if marker in (0xD8, 0xD9) or 0xD0 <= marker <= 0xD7:
+                    i += 2
+                    continue
+                seg_len = struct.unpack(">H", data[i + 2:i + 4])[0]
+                i += 2 + seg_len
+    except Exception:
+        pass
+    return None, None
+
+
+def _preprocess(b: bytes, suffix: str, mode: str, max_edge: int, grid: int):
+    """Client-side image handoff transform (noise-floor study knob §1).
+
+    Returns a list of (bytes, mime, label, w, h) — usually 1, but `tiles` returns
+    several. Requires Pillow; if unavailable, falls back to `full`. The provider
+    still resizes server-side, but this controls what *reaches* that resize:
+      full       — original bytes (provider then downsamples a 2200px sheet).
+      downsample — cap the long edge at max_edge before sending (measures the cliff).
+      tiles      — split into a grid×grid of full-res tiles; each tile is downsampled
+                   separately by the provider, ~grid× the effective resolution on the
+                   measurement table without needing per-sheet crop boxes.
+    """
+    if mode == "full":
+        w, h = _image_dims(b, suffix)
+        return [(b, _IMG_MIME.get(suffix.lower(), "image/png"), "full", w, h)]
+    try:
+        import io
+        from PIL import Image
+        im = Image.open(io.BytesIO(b)); im.load()
+    except Exception:
+        w, h = _image_dims(b, suffix)
+        return [(b, _IMG_MIME.get(suffix.lower(), "image/png"), "full(pil-missing)", w, h)]
+
+    def _enc(img, label):
+        buf = io.BytesIO()
+        fmt = "PNG" if suffix.lower() == ".png" else "JPEG"
+        img.save(buf, format=fmt, quality=95) if fmt == "JPEG" else img.save(buf, format=fmt)
+        data = buf.getvalue()
+        return (data, "image/png" if fmt == "PNG" else "image/jpeg", label, img.width, img.height)
+
+    if mode == "downsample":
+        long_edge = max(im.width, im.height)
+        if long_edge > max_edge:
+            scale = max_edge / long_edge
+            im = im.resize((max(1, int(im.width * scale)), max(1, int(im.height * scale))),
+                           Image.LANCZOS)
+        return [_enc(im, f"downsample<= {max_edge}")]
+
+    if mode == "tiles":
+        out = []
+        gw, gh = im.width // grid, im.height // grid
+        for r in range(grid):
+            for c in range(grid):
+                box = (c * gw, r * gh,
+                       im.width if c == grid - 1 else (c + 1) * gw,
+                       im.height if r == grid - 1 else (r + 1) * gh)
+                out.append(_enc(im.crop(box), f"tile_r{r}c{c}"))
+        return out
+
+    w, h = _image_dims(b, suffix)
+    return [(b, _IMG_MIME.get(suffix.lower(), "image/png"), "full", w, h)]
+
+
 def view_image(args: dict, root: Path, state: dict):
     path = args.get("path")
     if not isinstance(path, str):
@@ -119,11 +204,28 @@ def view_image(args: dict, root: Path, state: dict):
         return _err(f"unsupported image extension: {p.suffix!r}")
     b = p.read_bytes()
     rel = _rel(root, p)
+    cfg = state.get("img_cfg", {})
+    mode = cfg.get("mode", "full")
+    pieces = _preprocess(b, p.suffix, mode, cfg.get("max_edge", 1568), cfg.get("grid", 2))
     state.setdefault("images_viewed", []).append(rel)
+    is_sheet = rel.startswith("datasheets/")
+    images = []
+    for (data, m, label, w, h) in pieces:
+        state.setdefault("image_manifest", []).append({
+            "path": rel, "variant": label, "bytes": len(data),
+            "width": w, "height": h, "mime": m, "is_sheet": is_sheet,
+        })
+        images.append({"image_b64": base64.b64encode(data).decode("ascii"),
+                       "image_mime": m, "is_sheet": is_sheet})
+    dims = ", ".join(f"{im['variant']} {im['width']}x{im['height']}"
+                     for im in state["image_manifest"][-len(pieces):])
     return {
-        "text": f"Image at /workspace/{rel} ({len(b)} bytes).",
-        "image_b64": base64.b64encode(b).decode("ascii"),
-        "image_mime": mime,
+        "text": f"Image at /workspace/{rel} (mode={mode}; {dims}).",
+        "images": images,
+        # Back-compat single-image fields (first piece):
+        "image_b64": images[0]["image_b64"],
+        "image_mime": images[0]["image_mime"],
+        "is_sheet": is_sheet,
     }
 
 

@@ -14,6 +14,8 @@ OpenAI `tool_calls` shape). This is what frontier agentic benchmarks
 from __future__ import annotations
 
 import json
+import socket
+import ssl
 import time
 import urllib.error
 import urllib.request
@@ -22,7 +24,12 @@ from typing import Any
 OR_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 # Reasonable defaults for an OpenRouter benchmark client. Override per call.
-_DEFAULT_MAX_TOKENS = 8192  # room for reasoning + a large multi-row JSON submission
+# No output-token cap by default. A token budget is NOT part of the benchmark
+# env — it was a harness artifact that truncated reasoning models mid-thought
+# (finish=length) and produced false zeros. Omitting max_tokens lets each model
+# generate until it naturally stops (bounded only by the model's own output
+# capacity). Pass an explicit max_tokens only if you deliberately want a cap.
+_DEFAULT_MAX_TOKENS = None
 _DEFAULT_TEMPERATURE = 0.6
 _TIMEOUT_SEC = 180
 
@@ -51,6 +58,9 @@ class OpenRouterClient:
         self.title = title
         self.cost_usd = 0.0
         self.calls = 0
+        self.tok_in = 0
+        self.tok_out = 0
+        self.tok_cached = 0
         self.served_providers: set[str] = set()
         self.last_usage: dict[str, Any] | None = None
 
@@ -63,26 +73,36 @@ class OpenRouterClient:
         tools: list[dict] | None = None,
         max_tokens: int = _DEFAULT_MAX_TOKENS,
         temperature: float = _DEFAULT_TEMPERATURE,
+        reasoning: dict | None = None,
         retries: int = 4,
     ) -> dict:
         """Call /chat/completions. Returns a dict:
 
-            {"content": str, "tool_calls": [{"id","name","arguments"}], "finish_reason": str}
+            {"content": str, "tool_calls": [{"id","name","arguments"}],
+             "finish_reason": str, "served_provider": str | None}
 
         `arguments` is the raw JSON string the model emitted for that call.
-        Accumulates `self.cost_usd` and tracks served providers. Raises
-        ToolsUnsupported if `tools` was passed and the provider rejected it.
+        `served_provider` is the backend OpenRouter actually routed to for THIS
+        call (so callers can record it per rollout, not just per model).
+        `reasoning` is OpenRouter's reasoning-budget control, e.g.
+        {"effort": "high"} or {"max_tokens": 8000} — pinned per scored run so the
+        reasoning budget is a declared, reproducible variable (Cai §5).
+        Accumulates `self.cost_usd`. Raises ToolsUnsupported if `tools` was passed
+        and the provider rejected it.
         """
         payload: dict = {
             "model": model,
             "messages": messages,
-            "max_tokens": max_tokens,
             "temperature": temperature,
             # Ask OpenRouter for the exact $ amount billed for this call.
             "usage": {"include": True},
         }
+        if max_tokens is not None:
+            payload["max_tokens"] = max_tokens
         if provider:
             payload["provider"] = provider
+        if reasoning is not None:
+            payload["reasoning"] = reasoning
         if tools:
             payload["tools"] = tools
             payload["tool_choice"] = "auto"
@@ -101,8 +121,9 @@ class OpenRouterClient:
                 with urllib.request.urlopen(req, timeout=_TIMEOUT_SEC) as r:
                     data = json.loads(r.read())
                 # Cost + provider tracking
-                if data.get("provider"):
-                    self.served_providers.add(data["provider"])
+                served_provider = data.get("provider")
+                if served_provider:
+                    self.served_providers.add(served_provider)
                 u = data.get("usage") or {}
                 self.last_usage = u
                 if u.get("cost") is not None:
@@ -110,6 +131,14 @@ class OpenRouterClient:
                         self.cost_usd += float(u["cost"])
                     except (TypeError, ValueError):
                         pass
+                # token accounting (for cross-model cost projection)
+                try:
+                    self.tok_in += int(u.get("prompt_tokens") or 0)
+                    self.tok_out += int(u.get("completion_tokens") or 0)
+                    ptd = u.get("prompt_tokens_details") or {}
+                    self.tok_cached += int(ptd.get("cached_tokens") or 0)
+                except (TypeError, ValueError):
+                    pass
                 self.calls += 1
 
                 choice = (data.get("choices") or [{}])[0]
@@ -142,6 +171,7 @@ class OpenRouterClient:
                     "content": content,
                     "tool_calls": tool_calls,
                     "finish_reason": choice.get("finish_reason"),
+                    "served_provider": served_provider,
                 }
             except urllib.error.HTTPError as e:
                 last_err = e
@@ -158,7 +188,10 @@ class OpenRouterClient:
                         e.url, e.code, f"{e.reason}: {err_body[:200]}", e.headers, None
                     ) from e
                 time.sleep(2 + 3 * attempt)
-            except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:
+            except (urllib.error.URLError, TimeoutError, json.JSONDecodeError,
+                    ssl.SSLError, socket.timeout, ConnectionError, OSError) as e:
+                # Transient network/TLS faults (incl. the SSLV3_ALERT_BAD_RECORD_MAC
+                # read-time MAC failures seen on flaky links) — retry with backoff.
                 last_err = e
                 time.sleep(2 + 3 * attempt)
         assert last_err is not None

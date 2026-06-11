@@ -137,7 +137,7 @@
       "direction": 280,
       "A": 1.74,
       "B": 0.965,
-      "C": 3.17,
+      "C": 3.7,
       "D": 0.967,
       "E": 0.68,
       "note": ""
@@ -209,7 +209,7 @@
   "_opaque_sheet_map": {
     "sheet_A.png": {
       "true_year": 2026,
-      "source_file": "Pl-41B_2026_10A-22__p06.png",
+      "source_file": "Pl-41B_2026_10A-22__p05.png",
       "redaction_status": "hand"
     },
     "sheet_B.png": {

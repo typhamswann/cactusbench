@@ -1,34 +1,54 @@
 {
   "_comment": [
-    "OpenRouter model registry for SaguaroBench. Tag is the short name used",
-    "in CLI args + result filenames. `slug` is the OpenRouter routing slug.",
-    "`provider` (optional) pins precision / quantization via OpenRouter's",
-    "provider routing \u2014 matches the WanderBench config used to score the",
-    "same six models on that benchmark, so apples-to-apples comparisons are",
-    "possible.",
+    "OpenRouter model registry for SaguaroBench (Path B harness). Tag is the short",
+    "name used in CLI args + result filenames. `slug` is the OpenRouter routing slug.",
+    "`provider` (optional) pins precision/quantization or backend via OpenRouter's",
+    "provider routing. For a SCORED run, also pass --pin-provider <Backend> so the",
+    "route is single-backend (Cai \u00a73) and --reasoning to pin the budget (Cai \u00a75).",
     "",
-    "Verify slug names against https://openrouter.ai/models before running.",
-    "Pricing changes; cost-caps in run.py are a backstop, not a budget."
+    "VISION GATE: this is a multimodal task \u2014 every model here must be vision-capable",
+    "AT ITS ROUTE. Verify both the slug and vision support on https://openrouter.ai/models",
+    "before running; a text-only route silently scores ~0 and looks like a capability",
+    "gap when it is a routing error. Frontier closed models can also be run via their",
+    "provider-direct APIs / home harnesses \u2014 see docs/TEST-MATRIX.md.",
+    "Slugs below are 2026 best-effort and MUST be re-verified before a scored run."
   ],
   "models": {
+    "opus_4_8": {
+      "slug": "anthropic/claude-opus-4.8",
+      "provider": null,
+      "tier": "frontier",
+      "notes": "Anthropic flagship (verified live+vision 2026-06). Home harness = Claude Code. Watch over-correction at high reasoning (Cai)."
+    },
+    "opus_4_7": {
+      "slug": "anthropic/claude-opus-4.7",
+      "provider": null,
+      "tier": "frontier",
+      "notes": "Reference for the 4.7->4.8 delta (verified live+vision). Higher cross-rollout determinism in Cai's data."
+    },
+    "sonnet_4_6": {
+      "slug": "anthropic/claude-sonnet-4.6",
+      "provider": null,
+      "tier": "frontier",
+      "notes": "Cheaper Anthropic reference (verified live+vision); high determinism."
+    },
+    "gpt_5_5": {
+      "slug": "openai/gpt-5.5",
+      "provider": null,
+      "tier": "frontier",
+      "notes": "OpenAI flagship (verified live+vision 2026-06). Home harness = Codex CLI."
+    },
+    "gemini_3_1_pro": {
+      "slug": "google/gemini-3.1-pro-preview",
+      "provider": null,
+      "tier": "frontier",
+      "notes": "Google flagship (verified live+vision; -preview slug). Home harness = Gemini CLI. Test AI Studio vs Vertex; record content-filter aborts."
+    },
     "gemini35_flash": {
       "slug": "google/gemini-3.5-flash",
       "provider": null,
-      "notes": "Vision-native. Cheapest of the six on per-token basis."
-    },
-    "qwen37_plus": {
-      "slug": "qwen/qwen3.7-plus",
-      "provider": null,
-      "notes": "Vision-capable. No quantization pin \u2014 let OpenRouter pick best provider."
-    },
-    "qwen35_397b": {
-      "slug": "qwen/qwen3.5-397b-a17b",
-      "provider": {
-        "quantizations": [
-          "fp8"
-        ]
-      },
-      "notes": "MoE 397B-A17B. Pinned fp8 to match WanderBench run config."
+      "tier": "reference",
+      "notes": "Vision-native, cheap. Pin --pin-provider Google for scored runs."
     },
     "glm5v_turbo": {
       "slug": "z-ai/glm-5v-turbo",
@@ -37,7 +57,14 @@
           "fp8"
         ]
       },
-      "notes": "GLM-5V Turbo. Vision-first. fp8 pin."
+      "tier": "open",
+      "notes": "GLM vision. Empty-response terminator expected \u2014 report raw vs engaged. fp8 pin."
+    },
+    "minimax_m3": {
+      "slug": "minimax/minimax-m3",
+      "provider": null,
+      "tier": "open",
+      "notes": "M3 is the vision-capable MiniMax (M2.7 is text-only \u2014 verified 2026-06). Bimodal instability in Cai \u2014 use >=10 rollouts."
     },
     "kimi_k26": {
       "slug": "moonshotai/kimi-k2.6",
@@ -46,12 +73,36 @@
           "fp8"
         ]
       },
-      "notes": "Kimi K2.6. fp8 pin."
+      "tier": "open",
+      "notes": "Kimi K2.6 (verified live+vision). fp8 pin."
+    },
+    "qwen37_plus": {
+      "slug": "qwen/qwen3.7-plus",
+      "provider": null,
+      "tier": "open",
+      "notes": "qwen3.7-plus IS vision-capable (verified 2026-06); scored ~0.80 in pilots. No -vl slug needed."
+    },
+    "qwen35_397b": {
+      "slug": "qwen/qwen3.5-397b-a17b",
+      "provider": {
+        "quantizations": [
+          "fp8"
+        ]
+      },
+      "tier": "open",
+      "notes": "MoE 397B-A17B fp8. In pilots it was load-balanced across 4 backends \u2014 PIN for scored runs."
     },
     "gemma4_26b": {
       "slug": "google/gemma-4-26b-a4b-it",
       "provider": null,
-      "notes": "Gemma 4 26B-A4B. VERIFY exact OpenRouter slug \u2014 Gemma family naming changes between releases."
+      "tier": "open",
+      "notes": "Cheapest; highest reward/$ in pilots. VERIFY Gemma slug \u2014 family naming drifts."
+    },
+    "qwen3_vl_plus": {
+      "slug": "qwen3-vl-plus",
+      "provider": null,
+      "tier": "reference",
+      "notes": "Alibaba Qwen3-VL-Plus (proprietary, dedicated vision). NOT on OpenRouter \u2014 routed to first-party DashScope via providers.py. The only OS model that drives Qwen Code's multi-image loop."
     }
   }
 }

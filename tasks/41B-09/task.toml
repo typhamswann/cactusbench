@@ -27,6 +27,10 @@ n_photos = 0
 redaction_status_2023 = "hand"
 redaction_status_2026 = "hand"
 redaction_status = "hand"
+# headline_scored = false when the two years use different redaction styles, so
+# redaction artifacts cannot leak the year into the headline number (guidance §2b).
+headline_scored = true
+max_turns_per_rollout = 50
 
 [verifier]
 timeout_sec = 300.0
@@ -50,6 +54,17 @@ allow_internet = false
 mcp_servers = []
 
 [environment.env]
+
+# Sandbox + harness manifest (Cai §4 / guidance §4). A buyer cannot re-run the
+# benchmark without these. See docs/MANIFEST.md for the canonical, run-wide copy.
+[manifest]
+max_turns_per_rollout = 50
+network_egress_policy = "none"        # allow_internet=false; no egress in-task
+tool_approval_policy = "auto"          # tools execute without human approval
+isolation_granularity = "per-task-container"
+observation_truncation_policy = "text>=50000 chars truncated; images elided beyond a sliding window (default 6)"
+asset_metadata_policy = "stripped"     # EXIF/XMP/PNG-text removed + asserted at build
+filename_policy = "opaque"             # sheet_{A,B}.png, photo_NNN.jpg; year hidden
 
 [solution]
 

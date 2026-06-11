@@ -1,0 +1,145 @@
+{
+  "_comment": [
+    "Home-harness agent profiles for harness/home_driver.py (Path A / H-home).",
+    "Each profile's `cmd` is run with cwd = the task workspace; the literal token",
+    "'{prompt}' is replaced with the wrapper instruction. The agent must read",
+    "./instruction.md + ./datasheets/ + ./photos/ and write ./submission.json.",
+    "VERIFY the CLI is installed and the invocation/flags are current before a",
+    "scored run \u2014 these are the production harnesses the models were post-trained",
+    "against, so the exact tool surface matters (Cai). See docs/TEST-MATRIX.md \u00a72."
+  ],
+  "agents": {
+    "claude_code": {
+      "cmd": [
+        "claude",
+        "-p",
+        "--dangerously-skip-permissions",
+        "--strict-mcp-config",
+        "{model}",
+        "{effort}",
+        "{prompt}"
+      ],
+      "model_flag": "--model",
+      "effort_tmpl": [
+        "--effort",
+        "{e}"
+      ],
+      "home_for": [
+        "opus_4_8",
+        "opus_4_7",
+        "sonnet_4_6"
+      ],
+      "image_primitive": "Read",
+      "notes": "Claude Code print-mode, isolated (no MCP, skip-permissions). Pass --model (e.g. claude-opus-4-8, claude-opus-4-7, claude-sonnet-4-6) to pick the variant."
+    },
+    "codex_cli": {
+      "cmd": [
+        "codex",
+        "exec",
+        "--skip-git-repo-check",
+        "--sandbox",
+        "workspace-write",
+        "{model}",
+        "{effort}",
+        "{prompt}",
+        "{images}"
+      ],
+      "image_attach": "-i",
+      "model_flag": "-m",
+      "effort_tmpl": [
+        "-c",
+        "model_reasoning_effort={e}"
+      ],
+      "home_for": [
+        "gpt_5_5"
+      ],
+      "image_primitive": "pre-attached via -i (NOT agent-discovered)",
+      "notes": "Codex requires images attached with -i; the agent cannot read them from the workspace like Claude Code. Structural image-handoff difference \u2014 see docs/NOISE-FLOOR-STUDY.md."
+    },
+    "antigravity": {
+      "cmd": [
+        "agy",
+        "-p",
+        "{prompt}",
+        "{model}",
+        "--dangerously-skip-permissions",
+        "--print-timeout",
+        "30m"
+      ],
+      "model_flag": "--model",
+      "home_for": [
+        "gemini_3_1_pro",
+        "gemini35_flash"
+      ],
+      "image_primitive": "Read (native Gemini agent)",
+      "notes": "Google Antigravity CLI (agy, ~/.local/bin/agy, OAuth). Reasoning is BAKED INTO the model picker \u2014 pass --model 'Gemini 3.1 Pro (High)' / 'Gemini 3.5 Flash (Low)' etc. (run `agy models`). Pass --effort too for the record/scaffold; it is not added to the cmd (no effort_tmpl)."
+    },
+    "qwen_code": {
+      "cmd": [
+        "/Users/typham-swann/.npm-global/bin/qwen",
+        "{prompt}",
+        "{model}",
+        "--auth-type",
+        "openai",
+        "--approval-mode",
+        "yolo",
+        "-o",
+        "text"
+      ],
+      "model_flag": "-m",
+      "route_env": {
+        "OPENAI_API_KEY": "@file:~/.dashscope_key",
+        "OPENAI_BASE_URL": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+        "OPENAI_MODEL": "{model}",
+        "QWEN_CODE_SUPPRESS_YOLO_WARNING": "1"
+      },
+      "home_for": [
+        "qwen37_plus",
+        "qwen35_397b",
+        "glm5v_turbo",
+        "minimax_m3",
+        "gemma4_26b",
+        "kimi_k26"
+      ],
+      "image_primitive": "agent reads via Qwen Code read tool (vision auto-switch)",
+      "notes": "Qwen Code (Gemini-CLI fork). Working recipe from wanderbench run_native_harness.py: route via OPENAI_* env vars (--auth-type openai), -o text, stdin=DEVNULL. Pass --model = the OpenRouter SLUG (e.g. qwen/qwen3.7-plus)."
+    },
+    "fake_perfect": {
+      "cmd": [
+        "__FAKE_PERFECT__"
+      ],
+      "home_for": [],
+      "notes": "Self-test only: writes the perfect submission from truth. No real agent."
+    },
+    "qwen_code_or": {
+      "cmd": [
+        "/Users/typham-swann/.npm-global/bin/qwen",
+        "{prompt}",
+        "{model}",
+        "--auth-type",
+        "openai",
+        "--approval-mode",
+        "yolo",
+        "-o",
+        "text"
+      ],
+      "model_flag": "-m",
+      "route_env": {
+        "OPENAI_API_KEY": "@file:~/.openrouter_key",
+        "OPENAI_BASE_URL": "https://openrouter.ai/api/v1",
+        "OPENAI_MODEL": "{model}",
+        "QWEN_CODE_SUPPRESS_YOLO_WARNING": "1"
+      },
+      "home_for": [
+        "qwen37_plus",
+        "qwen35_397b",
+        "glm5v_turbo",
+        "minimax_m3",
+        "gemma4_26b",
+        "kimi_k26"
+      ],
+      "image_primitive": "agent reads via Qwen Code read tool (vision auto-switch)",
+      "notes": "Qwen Code routing NON-Qwen open models via OpenRouter (not on DashScope). Pass --model = OpenRouter slug. Some models hang the agentic-vision loop (qwen3.7-plus does) \u2014 probe first."
+    }
+  }
+}

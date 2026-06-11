@@ -107,15 +107,24 @@ diverge from the literal sheet to reflect what the recorder intended.
 
 ## Scoring
 
-Per-cell match against ground truth, keyed by `(saguaro_id, year, arm)`,
-with field-typed tolerances:
+Per-cell match against ground truth. Rows are keyed by `(year, arm)` — each task
+is a single saguaro, so `saguaro_id` is constant and is scored as an ordinary cell
+rather than part of the key (keying by `saguaro_id` would let one constant id-slip,
+e.g. copying the prompt's placeholder, zero the whole task — a fragile penalty
+unrelated to the curation skill). Field-typed tolerances:
 
 | field | match rule |
 |---|---|
 | `direction` | numeric, ±1.0° |
 | `A`, `B`, `C`, `D`, `E` | numeric, ±0.011 m |
-| `note` | **list-of-acceptable** OR Jaccard word-set ≥0.5 (empty=empty) |
+| `note` | normalized-exact OR **list-of-acceptable** (empty=empty). Jaccard is **off the headline** — diagnostic only |
 | `saguaro_id` | normalized string equality |
+
+**Notes are 94% empty** (223/237 truth rows), so the raw `note` per-field accuracy
+mostly measures "did the model blank the field." The scorer therefore also reports
+`note_accuracy_nonempty` (accuracy over the 14 non-empty-note rows that actually
+test transcription) and `note_accuracy_jaccard_diag` (what the note field would
+score under the retired Jaccard rule) — neither feeds `cell_accuracy_reward`.
 
 Missing rows score 0 across all their cells. **Extra (hallucinated)
 rows** incur a 5% penalty each, capped at 50%. **Excluded rows** (truth
@@ -144,12 +153,15 @@ Per-task `reward.json`:
     "A": 1.0, "B": 1.0, "C": 0.933, "D": 1.0, "E": 1.0,
     "note": 0.867
   },
+  "note_accuracy_nonempty": 0.8,
+  "note_nonempty_total": 5,
+  "note_accuracy_jaccard_diag": 0.933,
   "saguaro_id": "41B-13"
 }
 ```
 
-`row_f1` and `per_field_accuracy` are diagnostics; `cell_accuracy_reward`
-is the primary metric.
+`row_f1`, `per_field_accuracy`, and the `note_accuracy_*` diagnostics are
+informational; `cell_accuracy_reward` is the primary metric.
 
 ### Why notes are list-of-acceptable
 
@@ -163,6 +175,11 @@ file stores all defensible note phrasings as a list; a match against
 any list member counts the cell as correct. See the upstream paper-
 faithful overrides in `data/curation_dataset_v2.json` for the full
 audit trail.
+
+The list-of-acceptable mechanism (not fuzzy Jaccard) is what carries the headline:
+Jaccard ≥0.5 is both gameable (pad a note with common tokens) and inflatable
+(empty=empty scores free), so it was moved off `cell_accuracy_reward` and is now a
+diagnostic only.
 
 ## Quickstart
 
@@ -191,12 +208,25 @@ required at runtime. See `harness/README.md` for full docs.
 
 ```bash
 export OPENROUTER_API_KEY=sk-or-v1-...
-python harness/run.py --models all --max-turns 30 --cost-cap 20
+# Scored run: pin the route + reasoning budget, ≥5 rollouts for CIs (see docs/MANIFEST.md).
+python harness/run.py --models all --max-turns 50 --rollouts 5 \
+       --reasoning medium --pin-provider Google --cost-cap 20
 ```
 
-Results land at `runs/<timestamp>/<model_tag>.json` with per-task
-`cell_accuracy_reward`, `row_f1`, per-field accuracy breakdown, cost in
-USD, served provider, and the list of images the agent chose to look at.
+Results land at `runs/<run-id>/<model_tag>.json` with, **per rollout**:
+`cell_accuracy_reward`, `row_f1`, per-field + note diagnostics, cost in USD, the
+served backend (`served_providers_rollout`), `pin_provider`/`provider_mismatch`,
+the reasoning budget, `engaged` + `terminator_shimmed` flags, and the
+transmitted-image manifest (`image_manifest`: bytes/width/height per attachment) +
+`n_assets_read`. Then aggregate:
+
+```bash
+python scripts/aggregate.py runs/<run-id>          # leaderboard: raw+engaged means, 95% CIs, reward/$
+python scripts/failure_taxonomy.py runs/<run-id>   # per-model failure-class table
+python scripts/stratify.py --config a=runs/<A> --config b=runs/<B>   # cross-harness spread
+```
+
+See [docs/TEST-MATRIX.md](docs/TEST-MATRIX.md) for the full 2026 model/harness run plan.
 
 ### Subsets and single tasks
 
@@ -243,7 +273,11 @@ truth.
   "Yes/No" stamps, photo annotations, and arrow overlays. 24/25
   saguaros are fully hand-redacted on both years; 41B-22's 2026 sheet
   falls back to an auto-redacted version (flagged in its `task.toml`
-  as `metadata.redaction_status_2026 = "auto"`).
+  as `metadata.redaction_status_2026 = "auto"`). Because mixed redaction
+  styles could leak the year from artifacts, **41B-22 is flagged
+  `headline_scored = false`** and excluded from the headline number — 24/25
+  tasks are headline-scored. All assets are stripped of EXIF/XMP/PNG-metadata
+  at build and asserted clean (see [docs/CONTAMINATION.md](docs/CONTAMINATION.md)).
 - **Photos:** 209 field photos (0–13 per saguaro). 2 saguaros have no
   photos (recorder didn't take any); the prompt flags this.
 - **Note overrides:** 14 truth rows have paper-faithful note overrides
@@ -294,9 +328,41 @@ saguaro-bench/
         └── tests/test.sh
 ```
 
+## Reproducibility & rigor (2026 SOTA contract)
+
+SaguaroBench is built to the bar in Sean Cai's *State of Data (May 2026)*: a
+benchmark whose headline survives scrutiny must declare its measurement surface,
+report its noise floor, and refresh against contamination. The credibility anchor
+is that **scoring is deterministic, stdlib, and has no LLM judge** — so the noise
+floor is purely model × harness, with zero judge variance.
+
+- **[docs/MANIFEST.md](docs/MANIFEST.md)** — sandbox + harness contract (50-turn
+  cap, egress/truncation policy, route + reasoning + rollout knobs). Re-runnable.
+- **[docs/TEST-MATRIX.md](docs/TEST-MATRIX.md)** — the full 2026 model/harness run
+  plan: which models, which harnesses, every scored run, per-axis cleanup.
+- **[docs/CONTAMINATION.md](docs/CONTAMINATION.md)** — provenance/n-gram check
+  (the per-arm 41B table is not web-present) + enforced metadata strip.
+- **[docs/REFRESH.md](docs/REFRESH.md)** — public 25 = dev set; scored test set
+  drawn fresh from the 184-saguaro held-back pool each cycle, truth kept private.
+- **Reporting** — `scripts/aggregate.py` (raw+engaged means, 95% bootstrap CIs,
+  per-difficulty, reward/$), `scripts/stratify.py` (cross-harness >5pp spread),
+  `scripts/failure_taxonomy.py` (per-model failure classes).
+- **Harness instrumentation** — per-rollout served backend + pin/mismatch,
+  reasoning budget, empty-response terminator shim (raw vs engaged), and the
+  transmitted-image manifest (the dominant multimodal-harness variable).
+
 ## Version history
 
-- **v0.3.0** (current) — Full curation task. Agent reads opaque-named
+- **v0.4.0** (current) — 2026 SOTA-rigor pass. Fixed a prompt self-leak (the
+  example row was a real truth row); retired Jaccard from the headline note metric
+  + added non-empty-note conditioning; enforced asset-metadata stripping at build;
+  flagged mixed-redaction 41B-22 out of the headline; added per-rollout provider
+  pin/disclosure, an empty-response terminator shim with raw/engaged reporting,
+  reasoning-budget pinning, transmitted-image manifest logging, multi-rollout +
+  bootstrap CIs, a held-back-pool test-draw, and the `aggregate`/`stratify`/
+  `failure_taxonomy` reporting layer. `max_turns = 50` (declared in the prompt).
+  See `docs/` + `SOTA-PLAN.md`.
+- **v0.3.0** — Full curation task. Agent reads opaque-named
   hand-redacted sheets + opaque-named photos, produces the cleaned
   cross-year arm-measurement table. Per-cell scoring with field-typed
   tolerances (direction ±1°, A/B/C/D/E ±0.011 m, note list-of-acceptable

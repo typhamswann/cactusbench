@@ -22,7 +22,7 @@ python harness/run.py --models all --max-turns 14 --cost-cap 10
 
 # 3. Inspect the results.
 ls runs/<timestamp>/
-cat runs/<timestamp>/gemini35_flash.json | jq '.results[] | {sid: .saguaro_id, reward: .exact_mapping_reward}'
+cat runs/<timestamp>/gemini35_flash.json | jq '.results[] | {sid: .saguaro_id, reward: .cell_accuracy_reward}'
 ```
 
 ## Args
@@ -31,10 +31,14 @@ cat runs/<timestamp>/gemini35_flash.json | jq '.results[] | {sid: .saguaro_id, r
 |---|---|---|
 | `--models` | `all` | Comma-sep model tags (see `harness/models.json`) or `all` |
 | `--tasks` | `all` | Comma-sep saguaro IDs (e.g. `41B-01,41B-13`) or `all` |
-| `--max-turns` | `14` | Max tool calls per task before forced termination |
+| `--max-turns` | `50` | Max tool calls per rollout (published contract; declared in the prompt) |
+| `--rollouts` | `1` | Rollouts per (model, task) cell — use ≥5 for confidence intervals |
+| `--reasoning` | `none` | Pin the reasoning budget: `none\|low\|medium\|high` (Cai §5) |
+| `--pin-provider` | `None` | Pin the OpenRouter backend (e.g. `Google`, `Z.AI`); mismatches flagged per rollout (Cai §3) |
 | `--image-window` | `6` | Keep image attachments only on the most recent N user messages |
 | `--cost-cap` | `None` | Abort a model once its running OpenRouter cost (USD) exceeds this |
 | `--run-id` | timestamp | Run identifier; results land at `runs/<run-id>/` |
+| `--resume` | `None` | Resume a run by id, skipping already-scored (saguaro, rollout) cells |
 | `--registry` | `harness/models.json` | Model registry path |
 
 ## Protocol
@@ -69,28 +73,40 @@ parse failures, or an API error), the harness shells out to the task's
   "cost_usd": 0.3142,
   "calls": 247,
   "capped_cost": false,
+  "pin_provider":     "Google",
+  "reasoning":        {"effort": "medium"},
+  "rollouts":         5,
   "results": [
     {
-      "saguaro_id":            "41B-01",
-      "model_tag":             "gemini35_flash",
-      "model_slug":            "google/gemini-3.5-flash",
-      "exact_mapping_reward":  1.0,
-      "arm_pair_f1":           1.0,
-      "structural_error":      null,
-      "stop":                  "write_submission",
-      "turns_taken":           7,
-      "max_turns":             14,
-      "images_viewed":         ["datasheets/2026.png", "datasheets/2023.png", "photos/2026/photo_1.jpg"],
-      "cost_usd_running":      0.0149,
-      "wall_time_sec":         18.4
-    },
-    ...
+      "saguaro_id":               "41B-01",
+      "model_tag":                "gemini35_flash",
+      "model_slug":               "google/gemini-3.5-flash",
+      "rollout_idx":              0,
+      "cell_accuracy_reward":     0.95,
+      "row_f1":                   0.978,
+      "per_field_accuracy":       {"A": 1.0, "C": 0.93, "note": 1.0, "...": "..."},
+      "note_accuracy_nonempty":   1.0,
+      "note_accuracy_jaccard_diag": 1.0,
+      "engaged":                  true,
+      "terminator_shimmed":       false,
+      "served_providers_rollout": ["Google"],
+      "pin_provider":             "Google",
+      "provider_mismatch":        false,
+      "reasoning":                {"effort": "medium"},
+      "n_assets_read":            3,
+      "image_manifest":           [{"path": "datasheets/sheet_A.png", "bytes": 855707, "width": 2200, "height": 1700, "mime": "image/png"}],
+      "stop":                     "write_submission",
+      "turns_taken":              7,
+      "max_turns":                50,
+      "cost_usd_running":         0.0149,
+      "wall_time_sec":            18.4
+    }
   ]
 }
 ```
 
-Results are flushed to disk after every task, so a SIGINT mid-run
-doesn't lose work.
+Results are flushed to disk after every rollout, so a SIGINT mid-run
+doesn't lose work. Aggregate with `scripts/aggregate.py runs/<run-id>`.
 
 ## Model registry
 
@@ -123,8 +139,23 @@ provider naming drifts between releases.
   protocol** (ReAct-style: reason, then emit one JSON tool call), recorded
   as `tool_mode: "text"`. A model gets 5 consecutive no-tool replies before
   `stop = no_tool_call_x5`.
-- `max_tokens` defaults to 8192 so a long reasoning trace plus a large
-  multi-row JSON submission don't get truncated mid-call (`finish=length`).
+- **Empty-response terminator shim (Cai §2):** open-weight models sometimes
+  return `content=""` + no tool call as a clean-stop, which a naive loop scores
+  as an empty submission (0.0). The harness retries this up to 4× and tags the
+  rollout `terminator_shimmed: true`; the summary reports **raw vs engaged-subset**
+  means separately. Always publish both.
+- **Provider pinning (Cai §3):** OpenRouter silently load-balances across backends
+  with different image preprocessing. `--pin-provider` forces a single backend
+  (`allow_fallbacks:false`); any fallback sets `provider_mismatch: true`. Each
+  rollout records `served_providers_rollout`.
+- **Reasoning budget (Cai §5):** `--reasoning` pins the effort and is recorded per
+  rollout; run low vs high as a sensitivity pass.
+- `max_tokens` is **unset** by default — capping it truncated reasoning models
+  mid-thought (`finish=length`) and produced false zeros. Each model generates
+  until it naturally stops.
+- **Transmitted-image manifest:** each `view_image` records the bytes + pixel
+  dimensions actually sent (`image_manifest`) — the dominant multimodal-harness
+  variable for a handwriting-legibility task.
 - Images are sent as base64 data URLs in the user message — that's the
   most portable across OpenRouter providers. The `--image-window` flag
   caps how many images stay attached at once.

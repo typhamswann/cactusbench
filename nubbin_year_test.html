@@ -1,0 +1,131 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Nubbin year test</title>
+<style>
+*{box-sizing:border-box} body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#11161c;color:#e6edf3}
+header{position:sticky;top:0;background:#0d1117;border-bottom:1px solid #30363d;padding:12px 20px;z-index:10;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:16px;margin:0;font-weight:600}
+header .stat{font-size:13px;color:#9aa7b4}
+button{background:#238636;color:#fff;border:0;padding:7px 14px;border-radius:6px;font-size:13px;cursor:pointer}
+button.sec{background:#21262d;border:1px solid #30363d}
+.sag{border:1px solid #30363d;margin:18px 20px;border-radius:10px;overflow:hidden;background:#161b22}
+.sag>h2{margin:0;padding:11px 16px;font-size:15px;background:#1c2330;border-bottom:1px solid #30363d;display:flex;gap:10px;align-items:center}
+.tag{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600}
+.tag.clean{background:#1a4d2e;color:#7ee2a8} .tag.mis{background:#5a2d2d;color:#ffb3b3}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.col{padding:12px}
+.col.y23{border-right:1px solid #30363d}
+.col h3{margin:0 0 4px;font-size:13px;color:#9aa7b4;font-weight:600;letter-spacing:.04em}
+.armcount{font-size:13px;margin:0 0 8px}
+.armcount b{color:#e6edf3;font-size:15px}
+.armlist{font-size:12px;color:#9aa7b4;margin:0 0 10px;line-height:1.7}
+.armlist .a{display:inline-block;background:#21262d;border:1px solid #30363d;border-radius:5px;padding:1px 6px;margin:1px}
+.armlist .a.nub{background:#3a2f15;border-color:#7a5c1e;color:#f0c879;font-weight:600}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px}
+.thumbs img{width:150px;height:200px;object-fit:cover;border-radius:6px;border:1px solid #30363d;cursor:zoom-in;background:#000}
+.nubs{padding:12px 16px;border-top:1px solid #30363d;background:#10151b}
+.nub{padding:10px;border:1px solid #2d3641;border-radius:8px;margin-bottom:10px}
+.nub .meta{font-size:13px;margin-bottom:6px}
+.nub .note{color:#c9a36b;font-style:italic}
+.keyrow{font-size:12px;color:#9aa7b4;margin-bottom:8px}
+.st{display:inline-block;padding:1px 7px;border-radius:5px;font-weight:600;margin:0 3px}
+.st.nub{background:#3a2f15;color:#f0c879}.st.arm{background:#16324a;color:#86c5f0}.st.absent{background:#2a2f36;color:#8b949e}
+.choices label{display:inline-block;margin:0 10px 5px 0;font-size:13px;cursor:pointer}
+.choices input{margin-right:5px;vertical-align:middle}
+.verdict{margin-top:7px;font-size:12.5px;font-weight:600}
+.v-ok{color:#7ee2a8}.v-bad{color:#ff9b9b}.v-na{color:#9aa7b4}
+#lb{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:100;cursor:zoom-out}
+#lb img{max-width:96vw;max-height:96vh}
+#lb .yr{position:absolute;top:18px;left:24px;font-size:18px;background:#0d1117;padding:6px 14px;border-radius:6px;border:1px solid #30363d}
+</style></head><body>
+<header>
+ <h1>Nubbin year test</h1>
+ <span class="stat" id="prog"></span>
+ <button onclick="dl()">Download answers JSON</button>
+ <button class="sec" onclick="if(confirm('Clear all answers?')){localStorage.removeItem('nub_ans2');location.reload()}">Reset</button>
+ <span class="stat">Trajectory is <b>absent &rarr; nubbin &rarr; arm</b>. Judge what you SEE in the photos; the key's recorded stages are shown per feature.</span>
+</header>
+<div id="root"></div>
+<div id="lb" onclick="this.style.display='none'"><span class="yr" id="lbyr"></span><img id="lbimg"></div>
+<script>
+const DATA=[{"sid": "15-109", "clean": false, "photos": {"2023": ["photo_001.jpg", "photo_002.jpg", "photo_007.jpg", "photo_008.jpg"], "2026": ["photo_003.jpg", "photo_004.jpg", "photo_005.jpg", "photo_006.jpg", "photo_009.jpg"]}, "nubs": [{"dir": 168, "note": "Nubbin (0.06 cm) (0.06 cm)", "state": {"2023": "arm", "2026": "nub"}, "arm_by_year": {"2023": "3", "2026": "5"}, "C_by_year": {"2023": 3.375, "2026": 2.57}, "recorded": [2023, 2026]}], "arms": {"2023": [{"arm": "1", "dir": 10, "nub": false}, {"arm": "2", "dir": 100, "nub": false}, {"arm": "3", "dir": 180, "nub": false}, {"arm": "4", "dir": 280, "nub": false}], "2026": [{"arm": "1", "dir": 32, "nub": false}, {"arm": "2", "dir": 120, "nub": false}, {"arm": "3", "dir": 225, "nub": false}, {"arm": "4", "dir": 302, "nub": false}, {"arm": "5", "dir": 168, "nub": true}]}}, {"sid": "15-111", "clean": false, "photos": {"2023": ["photo_003.jpg", "photo_005.jpg", "photo_006.jpg", "photo_008.jpg"], "2026": ["photo_001.jpg", "photo_002.jpg", "photo_004.jpg", "photo_007.jpg"]}, "nubs": [{"dir": 125, "note": "Nubbin (very small) (very small)", "state": {"2023": null, "2026": "nub"}, "arm_by_year": {"2026": "4"}, "C_by_year": {"2026": 3.8}, "recorded": [2026]}], "arms": {"2023": [{"arm": "1", "dir": 10, "nub": false}, {"arm": "2", "dir": 90, "nub": false}, {"arm": "3", "dir": 200, "nub": false}], "2026": [{"arm": "1", "dir": 40, "nub": false}, {"arm": "2", "dir": 115, "nub": false}, {"arm": "3", "dir": 216, "nub": false}, {"arm": "4", "dir": 125, "nub": true}]}}, {"sid": "15-67", "clean": false, "photos": {"2023": ["photo_003.jpg", "photo_005.jpg", "photo_006.jpg", "photo_008.jpg"], "2026": ["photo_001.jpg", "photo_002.jpg", "photo_004.jpg", "photo_007.jpg"]}, "nubs": [{"dir": 247, "note": "Nubbin + 2 small nubbins nub + 2 sm nubs", "state": {"2023": "nub", "2026": "arm"}, "arm_by_year": {"2023": "5", "2026": "6"}, "C_by_year": {"2023": 2.18, "2026": 2.23}, "recorded": [2023, 2026]}], "arms": {"2023": [{"arm": "1", "dir": 14, "nub": false}, {"arm": "2", "dir": 60, "nub": false}, {"arm": "3", "dir": 110, "nub": false}, {"arm": "4", "dir": 162, "nub": false}, {"arm": "5", "dir": 247, "nub": true}], "2026": [{"arm": "1", "dir": 6, "nub": false}, {"arm": "2", "dir": 65, "nub": false}, {"arm": "3", "dir": 122, "nub": false}, {"arm": "4", "dir": 185, "nub": false}, {"arm": "5", "dir": 221, "nub": false}, {"arm": "6", "dir": 242, "nub": false}, {"arm": "7", "dir": 281, "nub": false}, {"arm": "8", "dir": 281, "nub": false}]}}, {"sid": "15-80", "clean": false, "photos": {"2023": ["photo_002.jpg", "photo_006.jpg", "photo_007.jpg", "photo_008.jpg"], "2026": ["photo_001.jpg", "photo_003.jpg", "photo_004.jpg", "photo_005.jpg", "photo_009.jpg"]}, "nubs": [{"dir": 220, "note": "Nubbin Emerging from Arm 5 Emerging from Arm 5 Emerging from arm 5", "state": {"2023": "arm", "2026": "nub"}, "arm_by_year": {"2023": "7", "2026": "9"}, "C_by_year": {"2023": 3.05, "2026": 2.55}, "recorded": [2023, 2026]}], "arms": {"2023": [{"arm": "1", "dir": 4, "nub": false}, {"arm": "2", "dir": 78, "nub": false}, {"arm": "3", "dir": 112, "nub": false}, {"arm": "4", "dir": 170, "nub": false}, {"arm": "5", "dir": 172, "nub": false}, {"arm": "6", "dir": 238, "nub": false}, {"arm": "7", "dir": 234, "nub": false}, {"arm": "8", "dir": 300, "nub": false}], "2026": [{"arm": "1", "dir": 20, "nub": false}, {"arm": "2", "dir": 110, "nub": false}, {"arm": "3", "dir": 130, "nub": false}, {"arm": "4", "dir": 220, "nub": false}, {"arm": "5", "dir": 220, "nub": false}, {"arm": "6", "dir": 250, "nub": false}, {"arm": "7", "dir": 290, "nub": false}, {"arm": "8", "dir": 330, "nub": false}, {"arm": "9", "dir": 220, "nub": true}]}}, {"sid": "28-02A", "clean": true, "photos": {"2023": ["photo_002.jpg", "photo_004.jpg", "photo_005.jpg", "photo_007.jpg"], "2026": ["photo_001.jpg", "photo_003.jpg", "photo_006.jpg", "photo_008.jpg"]}, "nubs": [{"dir": 224, "note": "failed nubbin beneath arm", "state": {"2023": "nub", "2026": "arm"}, "arm_by_year": {"2023": "4", "2026": "4"}, "C_by_year": {"2023": 4.08, "2026": 4.18}, "recorded": [2023, 2026]}, {"dir": 193, "note": "Nubbin (in armpit of 6) (in armpit of 6)", "state": {"2023": null, "2026": "nub"}, "arm_by_year": {"2026": "6"}, "C_by_year": {"2026": 2.69}, "recorded": [2026]}], "arms": {"2023": [{"arm": "1", "dir": 31, "nub": false}, {"arm": "2", "dir": 124, "nub": false}, {"arm": "3", "dir": 163, "nub": false}, {"arm": "4", "dir": 224, "nub": true}, {"arm": "5", "dir": 339, "nub": false}], "2026": [{"arm": "1", "dir": 36, "nub": false}, {"arm": "2", "dir": 137, "nub": false}, {"arm": "3", "dir": 169, "nub": false}, {"arm": "4", "dir": 216, "nub": false}, {"arm": "5", "dir": 345, "nub": false}, {"arm": "6", "dir": 193, "nub": true}, {"arm": "7", "dir": 78, "nub": false}]}}, {"sid": "28-100", "clean": true, "photos": {"2023": ["photo_001.jpg", "photo_002.jpg", "photo_006.jpg", "photo_008.jpg"], "2026": ["photo_003.jpg", "photo_004.jpg", "photo_005.jpg", "photo_007.jpg", "photo_009.jpg"]}, "nubs": [{"dir": 343, "note": "Nubbin beneath arm; 2.91 height, 1.02 underneath", "state": {"2023": "nub", "2026": "nub"}, "arm_by_year": {"2023": "3", "2026": "4"}, "C_by_year": {"2023": 5.29, "2026": 5.39}, "recorded": [2023, 2026]}], "arms": {"2023": [{"arm": "1", "dir": 195, "nub": false}, {"arm": "2", "dir": 200, "nub": false}, {"arm": "3", "dir": 343, "nub": true}], "2026": [{"arm": "1", "dir": 198, "nub": false}, {"arm": "2", "dir": 202, "nub": false}, {"arm": "3", "dir": 318, "nub": false}, {"arm": "4", "dir": 342, "nub": true}]}}, {"sid": "28-112", "clean": true, "photos": {"2023": ["photo_001.jpg", "photo_005.jpg", "photo_007.jpg", "photo_008.jpg"], "2026": ["photo_002.jpg", "photo_003.jpg", "photo_004.jpg", "photo_006.jpg"]}, "nubs": [{"dir": 136, "note": "nub", "state": {"2023": "nub", "2026": "arm"}, "arm_by_year": {"2023": "4", "2026": "4"}, "C_by_year": {"2023": 3.1, "2026": 3.16}, "recorded": [2023, 2026]}], "arms": {"2023": [{"arm": "1", "dir": 2, "nub": false}, {"arm": "2", "dir": 110, "nub": false}, {"arm": "3", "dir": 136, "nub": false}, {"arm": "4", "dir": 136, "nub": true}, {"arm": "5", "dir": 176, "nub": false}, {"arm": "6", "dir": 214, "nub": false}, {"arm": "7", "dir": 248, "nub": false}], "2026": [{"arm": "1", "dir": 5, "nub": false}, {"arm": "2", "dir": 118, "nub": false}, {"arm": "3", "dir": 130, "nub": false}, {"arm": "4", "dir": 131, "nub": false}, {"arm": "5", "dir": 174, "nub": false}, {"arm": "6", "dir": 238, "nub": false}, {"arm": "7", "dir": 248, "nub": false}, {"arm": "8", "dir": 249, "nub": false}]}}, {"sid": "40-107", "clean": false, "photos": {"2023": ["photo_001.jpg", "photo_006.jpg", "photo_007.jpg", "photo_008.jpg"], "2026": ["photo_002.jpg", "photo_003.jpg", "photo_004.jpg", "photo_005.jpg"]}, "nubs": [{"dir": 200, "note": "nubbin baseball Nubbin Baseball NUBBIN BASEBALL Baseball", "state": {"2023": "arm", "2026": "nub"}, "arm_by_year": {"2023": "2", "2026": "2"}, "C_by_year": {"2023": 6.35, "2026": 6.36}, "recorded": [2023, 2026]}], "arms": {"2023": [{"arm": "1", "dir": 108, "nub": false}, {"arm": "2", "dir": 188, "nub": false}, {"arm": "3", "dir": 220, "nub": false}], "2026": [{"arm": "1", "dir": 120, "nub": false}, {"arm": "2", "dir": 200, "nub": true}, {"arm": "3", "dir": 230, "nub": false}]}}, {"sid": "41F-02", "clean": true, "photos": {"2023": ["photo_001.jpg", "photo_003.jpg", "photo_004.jpg", "photo_007.jpg"], "2026": ["photo_002.jpg", "photo_005.jpg", "photo_006.jpg", "photo_008.jpg"]}, "nubs": [{"dir": 244, "note": "(nubbin q 4/13) (nubbin g 4/13)", "state": {"2023": null, "2026": "nub"}, "arm_by_year": {"2026": "4"}, "C_by_year": {"2026": 4.3}, "recorded": [2026]}], "arms": {"2023": [{"arm": "1", "dir": 66, "nub": false}, {"arm": "2", "dir": 206, "nub": false}, {"arm": "3", "dir": 321, "nub": false}], "2026": [{"arm": "1", "dir": 74, "nub": false}, {"arm": "2", "dir": 204, "nub": false}, {"arm": "3", "dir": 326, "nub": false}, {"arm": "4", "dir": 244, "nub": true}]}}, {"sid": "6-051", "clean": true, "photos": {"2023": ["photo_001.jpg", "photo_003.jpg", "photo_004.jpg", "photo_008.jpg"], "2026": ["photo_002.jpg", "photo_005.jpg", "photo_006.jpg", "photo_007.jpg", "photo_009.jpg"]}, "nubs": [{"dir": 312, "note": "appears to be nubbin coming out of base appears to be a nubbin coming out of base", "state": {"2023": "arm", "2026": "nub"}, "arm_by_year": {"2023": "3", "2026": "3"}, "C_by_year": {"2023": 3.96, "2026": 4.22}, "recorded": [2023, 2026]}, {"dir": 180, "note": "Nubbin above #3 - ping pong nubbin above #3 - ping pong Nubbin above #3 ping pong pingpong nubbin above #3", "state": {"2023": "arm", "2026": "nub"}, "arm_by_year": {"2023": "2", "2026": "5"}, "C_by_year": {"2023": 3.26, "2026": 3.645}, "recorded": [2023, 2026]}, {"dir": 18, "note": "nubbin - ping pong ball size nubbin ping pong ball size pingpong nubbin", "state": {"2023": null, "2026": "nub"}, "arm_by_year": {"2026": "6"}, "C_by_year": {"2026": 3.02}, "recorded": [2026]}], "arms": {"2023": [{"arm": "1", "dir": 122, "nub": false}, {"arm": "2", "dir": 178, "nub": false}, {"arm": "3", "dir": 310, "nub": false}, {"arm": "4", "dir": 219, "nub": false}, {"arm": "5", "dir": 167, "nub": false}], "2026": [{"arm": "1", "dir": 120, "nub": false}, {"arm": "2", "dir": 180, "nub": false}, {"arm": "3", "dir": 312, "nub": true}, {"arm": "4", "dir": 207, "nub": false}, {"arm": "5", "dir": 180, "nub": true}, {"arm": "6", "dir": 18, "nub": true}]}}, {"sid": "6-10", "clean": true, "photos": {"2023": ["photo_001.jpg", "photo_002.jpg", "photo_008.jpg", "photo_009.jpg"], "2026": ["photo_003.jpg", "photo_004.jpg", "photo_005.jpg", "photo_006.jpg", "photo_007.jpg"]}, "nubs": [{"dir": 190, "note": "nubin", "state": {"2023": "nub", "2026": "nub"}, "arm_by_year": {"2023": "4", "2026": "2"}, "C_by_year": {"2023": null, "2026": null}, "recorded": [2023, 2026]}], "arms": {"2023": [{"arm": "1", "dir": 350, "nub": false}, {"arm": "2", "dir": 300, "nub": false}, {"arm": "3", "dir": 140, "nub": false}, {"arm": "4", "dir": 190, "nub": true}], "2026": [{"arm": "1", "dir": 350, "nub": false}, {"arm": "2", "dir": 306, "nub": false}, {"arm": "2", "dir": 194, "nub": true}, {"arm": "3", "dir": 138, "nub": false}]}}];
+const ans=JSON.parse(localStorage.getItem('nub_ans2')||'{}');
+function key(sid,i){return sid+'#'+i}
+function save(){localStorage.setItem('nub_ans2',JSON.stringify(ans));render_verdicts();prog()}
+function zoom(src,yr){document.getElementById('lbimg').src=src;document.getElementById('lbyr').textContent=yr;document.getElementById('lb').style.display='flex'}
+function imgs(sid,arr,yr){return arr.map(f=>`<img loading=lazy src="tasks_test/${sid}/assets/photos/${f}" onclick="zoom(this.src,'${yr}')">`).join('')}
+function fmt(v){return v===null||v===undefined?'—':v}
+function armblk(arr){
+  const n=arr.length, nn=arr.filter(a=>a.nub).length;
+  const chips=arr.map(a=>`<span class="a${a.nub?' nub':''}">arm ${a.arm} &middot; ${a.dir}&deg;${a.nub?' (nub)':''}</span>`).join('');
+  return `<div class="armcount"><b>${n}</b> arms recorded${nn?` &nbsp;(${nn} nubbin${nn>1?'s':''})`:''}</div><div class="armlist">${chips}</div>`;
+}
+function stbadge(s){const l=s===null?'absent':s;return `<span class="st ${s||'absent'}">${l}</span>`}
+function verdict(n,c){
+  const rec=n.recorded, inBoth=rec.length===2, only26=rec.length===1&&rec[0]===2026, only23=rec.length===1&&rec[0]===2023;
+  if(!c) return ['','v-na'];
+  if(c==='unsure') return ['Unsure — cannot adjudicate.','v-na'];
+  const both = (c==='both_nub'||c==='both_arm');
+  if(c==='new'){
+    if(only26) return ['You see it ONLY in 2026; key records 2026 only → consistent (Case 1: new emergence).','v-ok'];
+    if(inBoth) return ['You see it ONLY in 2026, but the key has a 2023 antecedent too → key may have matched it to an earlier arm. Worth a look.','v-bad'];
+    return ['You see new-2026 but key records 2023 only → mismatch.','v-bad'];
+  }
+  if(both){
+    const how = c==='both_arm' ? ' (grew nubbin→arm)' : ' (still a nubbin)';
+    if(inBoth) return [`You see it in BOTH years${how}; key records both → consistent (Case 2: tracked across surveys).`,'v-ok'];
+    if(only26) return [`You see it in BOTH years${how}, but the key records it ONLY in 2026 → by your rule it existed in 2023, so Case 3 (existed-but-unrecorded) — keeping it is INCONSISTENT.`,'v-bad'];
+    return [`You see it in BOTH years${how}, but the key records it ONLY in 2023 → the 2026 record is missing.`,'v-bad'];
+  }
+  if(c==='only23'){
+    if(only23) return ['Only 2023, gone by 2026; key records 2023 only → matches what you see (note: one survey = limited growth signal).','v-na'];
+    return ['You see it ONLY in 2023, but key records 2026 too → mismatch.','v-bad'];
+  }
+  return ['','v-na'];
+}
+function root(){
+  return DATA.map(s=>{
+    const nubs=s.nubs.map((n,i)=>{
+      const k=key(s.sid,i); const ch=ans[k]||'';
+      const a23=n.arm_by_year['2023'], a26=n.arm_by_year['2026'];
+      const armtxt=[a23?`2023:arm${a23}`:null,a26?`2026:arm${a26}`:null].filter(Boolean).join(', ');
+      const c23=n.C_by_year['2023'], c26=n.C_by_year['2026'];
+      const grew=(c23!=null&&c26!=null)?` &nbsp; tip C ${c23}→${c26}m`:'';
+      return `<div class="nub" data-k="${k}">
+        <div class="meta">Feature @ <b>${n.dir}&deg;</b> &nbsp; <span class="note">${n.note.replace(/</g,'&lt;')}</span></div>
+        <div class="keyrow">Answer key: 2023 ${stbadge(n.state['2023'])} &rarr; 2026 ${stbadge(n.state['2026'])}${grew} &nbsp; (${armtxt||'—'})</div>
+        <div class="choices">
+          <label><input type=radio name="${k}" value="new" ${ch==='new'?'checked':''} onchange="ans['${k}']='new';save()">New in 2026 (absent 2023)</label>
+          <label><input type=radio name="${k}" value="both_nub" ${ch==='both_nub'?'checked':''} onchange="ans['${k}']='both_nub';save()">Both years, still nubbin</label>
+          <label><input type=radio name="${k}" value="both_arm" ${ch==='both_arm'?'checked':''} onchange="ans['${k}']='both_arm';save()">Both years, grew into arm</label>
+          <label><input type=radio name="${k}" value="only23" ${ch==='only23'?'checked':''} onchange="ans['${k}']='only23';save()">Only 2023 (gone by 2026)</label>
+          <label><input type=radio name="${k}" value="unsure" ${ch==='unsure'?'checked':''} onchange="ans['${k}']='unsure';save()">Unsure</label>
+        </div>
+        <div class="verdict" id="v_${k}"></div>
+      </div>`;
+    }).join('');
+    return `<div class="sag"><h2>${s.sid}<span class="tag ${s.clean?'clean':'mis'}">${s.clean?'clean':'misaligned'}</span></h2>
+      <div class="cols">
+        <div class="col y23"><h3>2023 PHOTOS</h3>${armblk(s.arms['2023'])}<div class="thumbs">${imgs(s.sid,s.photos['2023'],'2023')}</div></div>
+        <div class="col"><h3>2026 PHOTOS</h3>${armblk(s.arms['2026'])}<div class="thumbs">${imgs(s.sid,s.photos['2026'],'2026')}</div></div>
+      </div>
+      <div class="nubs">${nubs}</div></div>`;
+  }).join('');
+}
+function render_verdicts(){
+  DATA.forEach(s=>s.nubs.forEach((n,i)=>{
+    const k=key(s.sid,i); const el=document.getElementById('v_'+k); if(!el)return;
+    const [txt,cls]=verdict(n,ans[k]); el.textContent=txt; el.className='verdict '+cls;
+  }));
+}
+function prog(){
+  let tot=0,done=0; DATA.forEach(s=>s.nubs.forEach((n,i)=>{tot++;if(ans[key(s.sid,i)])done++}));
+  document.getElementById('prog').textContent=`${done}/${tot} judged`;
+}
+function dl(){
+  const out=[]; DATA.forEach(s=>s.nubs.forEach((n,i)=>{const k=key(s.sid,i);
+    out.push({saguaro:s.sid,clean:s.clean,dir:n.dir,note:n.note,key_state:n.state,recorded:n.recorded,your_call:ans[k]||null});}));
+  const b=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='nubbin_year_answers.json';a.click();
+}
+document.getElementById('root').innerHTML=root();
+render_verdicts();prog();
+</script></body></html>
