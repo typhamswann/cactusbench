@@ -1,0 +1,210 @@
+{
+  "saguaro_id": "40-108",
+  "scored_fields": [
+    "saguaro_id",
+    "direction",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "note"
+  ],
+  "tolerances": {
+    "direction": 1.0,
+    "A": 0.011,
+    "B": 0.011,
+    "C": 0.011,
+    "D": 0.011,
+    "E": 0.011
+  },
+  "truth_rows": [
+    {
+      "saguaro_id": "40-108",
+      "year": 2023,
+      "arm": "1",
+      "direction": 98,
+      "A": 2.62,
+      "B": 0.93,
+      "C": 3.72,
+      "D": 0.82,
+      "E": 0.6,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-108",
+      "year": 2023,
+      "arm": "2",
+      "direction": 164,
+      "A": 4.74,
+      "B": 0.96,
+      "C": 4.895,
+      "D": 0.96,
+      "E": 0.2,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-108",
+      "year": 2023,
+      "arm": "3",
+      "direction": 190,
+      "A": 2.65,
+      "B": 1,
+      "C": 4.65,
+      "D": 1.01,
+      "E": 0.6,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-108",
+      "year": 2023,
+      "arm": "4",
+      "direction": 270,
+      "A": 2.58,
+      "B": 0.99,
+      "C": 4.26,
+      "D": 1.02,
+      "E": 0.4,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-108",
+      "year": 2023,
+      "arm": "5",
+      "direction": 336,
+      "A": 2.58,
+      "B": 0.96,
+      "C": 4.84,
+      "D": 0.94,
+      "E": 0.5,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-108",
+      "year": 2026,
+      "arm": "1",
+      "direction": 108,
+      "A": 2.57,
+      "B": 0.976,
+      "C": 3.81,
+      "D": 0.917,
+      "E": 0.55,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-108",
+      "year": 2026,
+      "arm": "2",
+      "direction": 172,
+      "A": 4.675,
+      "B": 1.065,
+      "C": 5.04,
+      "D": 1.073,
+      "E": 0.25,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-108",
+      "year": 2026,
+      "arm": "3",
+      "direction": 184,
+      "A": 2.625,
+      "B": 1.08,
+      "C": 4.8,
+      "D": 1.074,
+      "E": 0.55,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-108",
+      "year": 2026,
+      "arm": "4",
+      "direction": 276,
+      "A": 2.55,
+      "B": 1.064,
+      "C": 4.34,
+      "D": 1.094,
+      "E": 0.35,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-108",
+      "year": 2026,
+      "arm": "5",
+      "direction": 332,
+      "A": 2.575,
+      "B": 1.05,
+      "C": 4.89,
+      "D": 1.053,
+      "E": 0.5,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-108",
+      "year": 2026,
+      "arm": "6",
+      "direction": 114,
+      "A": 2.318,
+      "B": 1.041,
+      "C": 2.39,
+      "D": 1.041,
+      "E": 0.04,
+      "note": [
+        "",
+        "double nubbin - 1 ping-pong with cherry tomato on top",
+        "double nubbin - 1 ping pong with cherry tomato on top",
+        "double nubbin"
+      ]
+    }
+  ],
+  "_opaque_sheet_map": {
+    "sheet_A.png": {
+      "true_year": 2023,
+      "source_file": "Pl_40_2023_21-134__p14.png",
+      "redaction_status": "hand"
+    },
+    "sheet_B.png": {
+      "true_year": 2026,
+      "source_file": "Pl_40_2026_21-134__p09.png",
+      "redaction_status": "hand"
+    }
+  },
+  "_opaque_photo_map": {
+    "2023_01.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_002.jpg"
+    },
+    "2023_02.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_004.jpg"
+    },
+    "2023_03.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_001.jpg"
+    },
+    "2023_04.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_003.jpg"
+    },
+    "2026_01.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_005.jpg"
+    },
+    "2026_02.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_001.jpg"
+    },
+    "2026_03.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_003.jpg"
+    },
+    "2026_04.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_002.jpg"
+    },
+    "2026_05.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_004.jpg"
+    }
+  }
+}

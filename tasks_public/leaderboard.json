@@ -1,0 +1,79 @@
+[
+  {
+    "model": "gemini_3_1_pro",
+    "mean": 0.967,
+    "ci95_generalize": [
+      0.9366,
+      0.9867
+    ],
+    "ci95_reproduce_halfwidth": 0.0031,
+    "clean24": 0.9543,
+    "recovered": 0.9797
+  },
+  {
+    "model": "gpt_5_5",
+    "mean": 0.961,
+    "ci95_generalize": [
+      0.9298,
+      0.9817
+    ],
+    "ci95_reproduce_halfwidth": 0.0036,
+    "clean24": 0.9536,
+    "recovered": 0.9685
+  },
+  {
+    "model": "gemini35_flash",
+    "mean": 0.9574,
+    "ci95_generalize": [
+      0.9263,
+      0.9787
+    ],
+    "ci95_reproduce_halfwidth": 0.0068,
+    "clean24": 0.9442,
+    "recovered": 0.9706
+  },
+  {
+    "model": "opus_4_8",
+    "mean": 0.9423,
+    "ci95_generalize": [
+      0.9091,
+      0.9689
+    ],
+    "ci95_reproduce_halfwidth": 0.0113,
+    "clean24": 0.9367,
+    "recovered": 0.948
+  },
+  {
+    "model": "opus_4_7",
+    "mean": 0.928,
+    "ci95_generalize": [
+      0.8922,
+      0.9569
+    ],
+    "ci95_reproduce_halfwidth": 0.0062,
+    "clean24": 0.9238,
+    "recovered": 0.9323
+  },
+  {
+    "model": "qwen3_vl_plus",
+    "mean": 0.8788,
+    "ci95_generalize": [
+      0.8385,
+      0.9152
+    ],
+    "ci95_reproduce_halfwidth": 0.0179,
+    "clean24": 0.909,
+    "recovered": 0.8485
+  },
+  {
+    "model": "minimax_m3",
+    "mean": 0.7281,
+    "ci95_generalize": [
+      0.654,
+      0.7972
+    ],
+    "ci95_reproduce_halfwidth": 0.0482,
+    "clean24": 0.7758,
+    "recovered": 0.6804
+  }
+]

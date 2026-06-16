@@ -1,0 +1,146 @@
+{
+  "saguaro_id": "40-04",
+  "scored_fields": [
+    "saguaro_id",
+    "direction",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "note"
+  ],
+  "tolerances": {
+    "direction": 1.0,
+    "A": 0.011,
+    "B": 0.011,
+    "C": 0.011,
+    "D": 0.011,
+    "E": 0.011
+  },
+  "truth_rows": [
+    {
+      "saguaro_id": "40-04",
+      "year": 2023,
+      "arm": "1",
+      "direction": 0,
+      "A": 2.62,
+      "B": 1,
+      "C": 2.84,
+      "D": 0.97,
+      "E": 0.3,
+      "note": "arm looks like it may be bifurcating"
+    },
+    {
+      "saguaro_id": "40-04",
+      "year": 2023,
+      "arm": "2",
+      "direction": 180,
+      "A": 2.64,
+      "B": 1.13,
+      "C": 3.51,
+      "D": 1.15,
+      "E": 0.8,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-04",
+      "year": 2026,
+      "arm": "1",
+      "direction": 10,
+      "A": 2.59,
+      "B": 0.925,
+      "C": 2.94,
+      "D": 0.935,
+      "E": 0.3,
+      "note": [
+        "",
+        "two separate arms from same eruption spot",
+        "two separate arms",
+        "from same eruption spot"
+      ]
+    },
+    {
+      "saguaro_id": "40-04",
+      "year": 2026,
+      "arm": "2",
+      "direction": 180,
+      "A": 2.63,
+      "B": 1.112,
+      "C": 3.6,
+      "D": 1.15,
+      "E": 0.9,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-04",
+      "year": 2026,
+      "arm": "3",
+      "direction": 10,
+      "A": 2.59,
+      "B": 0.995,
+      "C": 2.94,
+      "D": 0.995,
+      "E": 0.45,
+      "note": [
+        "",
+        "two separate arms from same eruption spot"
+      ],
+      "_excluded": true
+    }
+  ],
+  "_opaque_sheet_map": {
+    "sheet_A.png": {
+      "true_year": 2023,
+      "source_file": "Pl_40_2023_1-20__p05.png",
+      "redaction_status": "hand"
+    },
+    "sheet_B.png": {
+      "true_year": 2026,
+      "source_file": "Pl_40_2026_1-20__p05.png",
+      "redaction_status": "hand"
+    }
+  },
+  "_opaque_photo_map": {
+    "2026_01.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_002.jpg"
+    },
+    "2026_02.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_006.jpg"
+    },
+    "2023_01.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_004.jpg"
+    },
+    "2023_02.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_001.jpg"
+    },
+    "2026_03.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_005.jpg"
+    },
+    "2023_03.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_003.jpg"
+    },
+    "2026_04.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_004.jpg"
+    },
+    "2026_05.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_001.jpg"
+    },
+    "2026_06.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_003.jpg"
+    },
+    "2023_04.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_002.jpg"
+    }
+  }
+}

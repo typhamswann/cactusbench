@@ -1,0 +1,416 @@
+[
+  {
+    "saguaro_id": "15-100",
+    "plot": "15",
+    "subset": "clean24",
+    "n_scored_rows": 14,
+    "n_arms_2023": 7,
+    "n_arms_2026": 7,
+    "n_photos": 9
+  },
+  {
+    "saguaro_id": "15-104",
+    "plot": "15",
+    "subset": "clean24",
+    "n_scored_rows": 12,
+    "n_arms_2023": 6,
+    "n_arms_2026": 6,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "28-02A",
+    "plot": "28",
+    "subset": "clean24",
+    "n_scored_rows": 11,
+    "n_arms_2023": 5,
+    "n_arms_2026": 6,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "28-07A",
+    "plot": "28",
+    "subset": "clean24",
+    "n_scored_rows": 12,
+    "n_arms_2023": 6,
+    "n_arms_2026": 6,
+    "n_photos": 4
+  },
+  {
+    "saguaro_id": "28-100",
+    "plot": "28",
+    "subset": "clean24",
+    "n_scored_rows": 7,
+    "n_arms_2023": 3,
+    "n_arms_2026": 4,
+    "n_photos": 9
+  },
+  {
+    "saguaro_id": "28-108",
+    "plot": "28",
+    "subset": "clean24",
+    "n_scored_rows": 4,
+    "n_arms_2023": 2,
+    "n_arms_2026": 2,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "28-109",
+    "plot": "28",
+    "subset": "clean24",
+    "n_scored_rows": 8,
+    "n_arms_2023": 4,
+    "n_arms_2026": 4,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "28-112",
+    "plot": "28",
+    "subset": "clean24",
+    "n_scored_rows": 15,
+    "n_arms_2023": 7,
+    "n_arms_2026": 8,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "40-01A",
+    "plot": "40",
+    "subset": "clean24",
+    "n_scored_rows": 4,
+    "n_arms_2023": 2,
+    "n_arms_2026": 2,
+    "n_photos": 9
+  },
+  {
+    "saguaro_id": "40-04",
+    "plot": "40",
+    "subset": "clean24",
+    "n_scored_rows": 4,
+    "n_arms_2023": 2,
+    "n_arms_2026": 2,
+    "n_photos": 10
+  },
+  {
+    "saguaro_id": "40-04A",
+    "plot": "40",
+    "subset": "clean24",
+    "n_scored_rows": 20,
+    "n_arms_2023": 10,
+    "n_arms_2026": 10,
+    "n_photos": 9
+  },
+  {
+    "saguaro_id": "40-05",
+    "plot": "40",
+    "subset": "clean24",
+    "n_scored_rows": 2,
+    "n_arms_2023": 1,
+    "n_arms_2026": 1,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "40-12A",
+    "plot": "40",
+    "subset": "clean24",
+    "n_scored_rows": 8,
+    "n_arms_2023": 4,
+    "n_arms_2026": 4,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "41B-03A",
+    "plot": "41B",
+    "subset": "clean24",
+    "n_scored_rows": 15,
+    "n_arms_2023": 7,
+    "n_arms_2026": 8,
+    "n_photos": 9
+  },
+  {
+    "saguaro_id": "41B-07A",
+    "plot": "41B",
+    "subset": "clean24",
+    "n_scored_rows": 4,
+    "n_arms_2023": 2,
+    "n_arms_2026": 2,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "41B-08",
+    "plot": "41B",
+    "subset": "clean24",
+    "n_scored_rows": 6,
+    "n_arms_2023": 3,
+    "n_arms_2026": 3,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "41B-10A",
+    "plot": "41B",
+    "subset": "clean24",
+    "n_scored_rows": 6,
+    "n_arms_2023": 3,
+    "n_arms_2026": 3,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "41F-01",
+    "plot": "41F",
+    "subset": "clean24",
+    "n_scored_rows": 5,
+    "n_arms_2023": 2,
+    "n_arms_2026": 3,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "41F-02",
+    "plot": "41F",
+    "subset": "clean24",
+    "n_scored_rows": 7,
+    "n_arms_2023": 3,
+    "n_arms_2026": 4,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "6-01",
+    "plot": "6",
+    "subset": "clean24",
+    "n_scored_rows": 2,
+    "n_arms_2023": 1,
+    "n_arms_2026": 1,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "6-047",
+    "plot": "6",
+    "subset": "clean24",
+    "n_scored_rows": 8,
+    "n_arms_2023": 4,
+    "n_arms_2026": 4,
+    "n_photos": 9
+  },
+  {
+    "saguaro_id": "6-051",
+    "plot": "6",
+    "subset": "clean24",
+    "n_scored_rows": 11,
+    "n_arms_2023": 5,
+    "n_arms_2026": 6,
+    "n_photos": 9
+  },
+  {
+    "saguaro_id": "6-07A",
+    "plot": "6",
+    "subset": "clean24",
+    "n_scored_rows": 4,
+    "n_arms_2023": 2,
+    "n_arms_2026": 2,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "15-66",
+    "plot": "15",
+    "subset": "recovered",
+    "n_scored_rows": 12,
+    "n_arms_2023": 6,
+    "n_arms_2026": 6,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "15-67",
+    "plot": "15",
+    "subset": "recovered",
+    "n_scored_rows": 13,
+    "n_arms_2023": 5,
+    "n_arms_2026": 8,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "15-75",
+    "plot": "15",
+    "subset": "recovered",
+    "n_scored_rows": 8,
+    "n_arms_2023": 4,
+    "n_arms_2026": 4,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "15-80",
+    "plot": "15",
+    "subset": "recovered",
+    "n_scored_rows": 17,
+    "n_arms_2023": 8,
+    "n_arms_2026": 9,
+    "n_photos": 9
+  },
+  {
+    "saguaro_id": "15-81",
+    "plot": "15",
+    "subset": "recovered",
+    "n_scored_rows": 12,
+    "n_arms_2023": 6,
+    "n_arms_2026": 6,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "15-108",
+    "plot": "15",
+    "subset": "recovered",
+    "n_scored_rows": 9,
+    "n_arms_2023": 4,
+    "n_arms_2026": 5,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "15-109",
+    "plot": "15",
+    "subset": "recovered",
+    "n_scored_rows": 9,
+    "n_arms_2023": 4,
+    "n_arms_2026": 5,
+    "n_photos": 9
+  },
+  {
+    "saguaro_id": "15-111",
+    "plot": "15",
+    "subset": "recovered",
+    "n_scored_rows": 7,
+    "n_arms_2023": 3,
+    "n_arms_2026": 4,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "15-112",
+    "plot": "15",
+    "subset": "recovered",
+    "n_scored_rows": 6,
+    "n_arms_2023": 3,
+    "n_arms_2026": 3,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "40-102",
+    "plot": "40",
+    "subset": "recovered",
+    "n_scored_rows": 2,
+    "n_arms_2023": 1,
+    "n_arms_2026": 1,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "40-105",
+    "plot": "40",
+    "subset": "recovered",
+    "n_scored_rows": 11,
+    "n_arms_2023": 5,
+    "n_arms_2026": 6,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "40-107",
+    "plot": "40",
+    "subset": "recovered",
+    "n_scored_rows": 7,
+    "n_arms_2023": 3,
+    "n_arms_2026": 4,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "40-108",
+    "plot": "40",
+    "subset": "recovered",
+    "n_scored_rows": 11,
+    "n_arms_2023": 5,
+    "n_arms_2026": 6,
+    "n_photos": 9
+  },
+  {
+    "saguaro_id": "40-121",
+    "plot": "40",
+    "subset": "recovered",
+    "n_scored_rows": 2,
+    "n_arms_2023": 1,
+    "n_arms_2026": 1,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "41B-12A",
+    "plot": "41B",
+    "subset": "recovered",
+    "n_scored_rows": 2,
+    "n_arms_2023": 1,
+    "n_arms_2026": 1,
+    "n_photos": 10
+  },
+  {
+    "saguaro_id": "41B-13A",
+    "plot": "41B",
+    "subset": "recovered",
+    "n_scored_rows": 5,
+    "n_arms_2023": 3,
+    "n_arms_2026": 2,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "41B-14",
+    "plot": "41B",
+    "subset": "recovered",
+    "n_scored_rows": 6,
+    "n_arms_2023": 3,
+    "n_arms_2026": 3,
+    "n_photos": 9
+  },
+  {
+    "saguaro_id": "41B-15A",
+    "plot": "41B",
+    "subset": "recovered",
+    "n_scored_rows": 9,
+    "n_arms_2023": 5,
+    "n_arms_2026": 4,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "41B-17",
+    "plot": "41B",
+    "subset": "recovered",
+    "n_scored_rows": 13,
+    "n_arms_2023": 6,
+    "n_arms_2026": 7,
+    "n_photos": 10
+  },
+  {
+    "saguaro_id": "41B-17A",
+    "plot": "41B",
+    "subset": "recovered",
+    "n_scored_rows": 6,
+    "n_arms_2023": 2,
+    "n_arms_2026": 4,
+    "n_photos": 9
+  },
+  {
+    "saguaro_id": "41F-08",
+    "plot": "41F",
+    "subset": "recovered",
+    "n_scored_rows": 9,
+    "n_arms_2023": 4,
+    "n_arms_2026": 5,
+    "n_photos": 8
+  },
+  {
+    "saguaro_id": "6-08B",
+    "plot": "6",
+    "subset": "recovered",
+    "n_scored_rows": 2,
+    "n_arms_2023": 1,
+    "n_arms_2026": 1,
+    "n_photos": 10
+  },
+  {
+    "saguaro_id": "6-10A",
+    "plot": "6",
+    "subset": "recovered",
+    "n_scored_rows": 6,
+    "n_arms_2023": 3,
+    "n_arms_2026": 3,
+    "n_photos": 4
+  }
+]

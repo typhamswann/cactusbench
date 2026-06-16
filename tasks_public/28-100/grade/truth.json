@@ -1,0 +1,180 @@
+{
+  "saguaro_id": "28-100",
+  "scored_fields": [
+    "saguaro_id",
+    "direction",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "note"
+  ],
+  "tolerances": {
+    "direction": 1.0,
+    "A": 0.011,
+    "B": 0.011,
+    "C": 0.011,
+    "D": 0.011,
+    "E": 0.011
+  },
+  "truth_rows": [
+    {
+      "saguaro_id": "28-100",
+      "year": 2023,
+      "arm": "1",
+      "direction": 195,
+      "A": 2.73,
+      "B": 1.05,
+      "C": 3.48,
+      "D": 1.05,
+      "E": 0.8,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-100",
+      "year": 2023,
+      "arm": "2",
+      "direction": 200,
+      "A": 2.91,
+      "B": 1.03,
+      "C": 4.12,
+      "D": 1.02,
+      "E": 0.4,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-100",
+      "year": 2023,
+      "arm": "3",
+      "direction": 343,
+      "A": 2.97,
+      "B": 1,
+      "C": 5.29,
+      "D": 0.96,
+      "E": 0.8,
+      "note": [
+        "",
+        "nubbin beneath arm; 2.91 height; 1.02 1 meter mark",
+        "nubbin beneath arm, 2.91 height, 1.02 under mark"
+      ]
+    },
+    {
+      "saguaro_id": "28-100",
+      "year": 2023,
+      "arm": "4",
+      "direction": 343,
+      "A": 2.91,
+      "B": 1.02,
+      "C": null,
+      "D": null,
+      "E": null,
+      "note": [
+        "",
+        "nubbin beneath arm 3"
+      ],
+      "_excluded": true
+    },
+    {
+      "saguaro_id": "28-100",
+      "year": 2026,
+      "arm": "1",
+      "direction": 198,
+      "A": 2.76,
+      "B": 1.025,
+      "C": 3.55,
+      "D": 1.08,
+      "E": 0.9,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-100",
+      "year": 2026,
+      "arm": "2",
+      "direction": 202,
+      "A": 2.92,
+      "B": 1.025,
+      "C": 4.36,
+      "D": 1.05,
+      "E": 0.35,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-100",
+      "year": 2026,
+      "arm": "3",
+      "direction": 342,
+      "A": 2.96,
+      "B": 1.01,
+      "C": 5.39,
+      "D": 1,
+      "E": 0.75,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-100",
+      "year": 2026,
+      "arm": "4",
+      "direction": 318,
+      "A": 2.91,
+      "B": 1.015,
+      "C": null,
+      "D": null,
+      "E": null,
+      "note": [
+        "",
+        "nubbin"
+      ]
+    }
+  ],
+  "_opaque_sheet_map": {
+    "sheet_A.png": {
+      "true_year": 2023,
+      "source_file": "Pl-28_2023_16-305__p09.png",
+      "redaction_status": "hand"
+    },
+    "sheet_B.png": {
+      "true_year": 2026,
+      "source_file": "Pl-28_2026_19-107__p06.png",
+      "redaction_status": "hand"
+    }
+  },
+  "_opaque_photo_map": {
+    "2023_01.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_003.jpg"
+    },
+    "2023_02.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_002.jpg"
+    },
+    "2026_01.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_005.jpg"
+    },
+    "2026_02.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_001.jpg"
+    },
+    "2026_03.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_003.jpg"
+    },
+    "2023_03.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_004.jpg"
+    },
+    "2026_04.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_002.jpg"
+    },
+    "2023_04.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_001.jpg"
+    },
+    "2026_05.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_004.jpg"
+    }
+  }
+}

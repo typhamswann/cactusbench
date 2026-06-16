@@ -1,0 +1,165 @@
+{
+  "saguaro_id": "40-12A",
+  "scored_fields": [
+    "saguaro_id",
+    "direction",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "note"
+  ],
+  "tolerances": {
+    "direction": 1.0,
+    "A": 0.011,
+    "B": 0.011,
+    "C": 0.011,
+    "D": 0.011,
+    "E": 0.011
+  },
+  "truth_rows": [
+    {
+      "saguaro_id": "40-12A",
+      "year": 2023,
+      "arm": "1",
+      "direction": 95,
+      "A": 3.15,
+      "B": 0.98,
+      "C": 3.89,
+      "D": 0.95,
+      "E": 0.65,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-12A",
+      "year": 2023,
+      "arm": "2",
+      "direction": 148,
+      "A": 2.76,
+      "B": 1,
+      "C": 3.38,
+      "D": 0.95,
+      "E": 1.2,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-12A",
+      "year": 2023,
+      "arm": "3",
+      "direction": 186,
+      "A": 2.9,
+      "B": 0.935,
+      "C": 3.82,
+      "D": 1,
+      "E": 1.3,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-12A",
+      "year": 2023,
+      "arm": "4",
+      "direction": 246,
+      "A": 3.22,
+      "B": 0.94,
+      "C": 3.62,
+      "D": 0.94,
+      "E": 0.4,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-12A",
+      "year": 2026,
+      "arm": "1",
+      "direction": 90,
+      "A": 3.15,
+      "B": 0.98,
+      "C": 3.93,
+      "D": 0.945,
+      "E": 0.6,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-12A",
+      "year": 2026,
+      "arm": "2",
+      "direction": 155,
+      "A": 2.72,
+      "B": 0.93,
+      "C": 3.28,
+      "D": 0.98,
+      "E": 1.25,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-12A",
+      "year": 2026,
+      "arm": "3",
+      "direction": 195,
+      "A": 2.89,
+      "B": 0.94,
+      "C": 3.78,
+      "D": 1.03,
+      "E": 1.35,
+      "note": ""
+    },
+    {
+      "saguaro_id": "40-12A",
+      "year": 2026,
+      "arm": "4",
+      "direction": 250,
+      "A": 3.25,
+      "B": 0.93,
+      "C": 3.66,
+      "D": 0.98,
+      "E": 0.45,
+      "note": ""
+    }
+  ],
+  "_opaque_sheet_map": {
+    "sheet_A.png": {
+      "true_year": 2023,
+      "source_file": "Pl_40_2023_1-20__p10.png",
+      "redaction_status": "hand"
+    },
+    "sheet_B.png": {
+      "true_year": 2026,
+      "source_file": "Pl_40_2026_1-20__p10.png",
+      "redaction_status": "hand"
+    }
+  },
+  "_opaque_photo_map": {
+    "2026_01.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_003.jpg"
+    },
+    "2023_01.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_004.jpg"
+    },
+    "2023_02.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_002.jpg"
+    },
+    "2023_03.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_001.jpg"
+    },
+    "2026_02.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_002.jpg"
+    },
+    "2026_03.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_001.jpg"
+    },
+    "2026_04.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_004.jpg"
+    },
+    "2023_04.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_003.jpg"
+    }
+  }
+}

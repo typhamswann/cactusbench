@@ -1,0 +1,260 @@
+{
+  "saguaro_id": "28-112",
+  "scored_fields": [
+    "saguaro_id",
+    "direction",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "note"
+  ],
+  "tolerances": {
+    "direction": 1.0,
+    "A": 0.011,
+    "B": 0.011,
+    "C": 0.011,
+    "D": 0.011,
+    "E": 0.011
+  },
+  "truth_rows": [
+    {
+      "saguaro_id": "28-112",
+      "year": 2023,
+      "arm": "1",
+      "direction": 2,
+      "A": 2.52,
+      "B": 1,
+      "C": 3.9,
+      "D": 1.03,
+      "E": 0.8,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-112",
+      "year": 2023,
+      "arm": "2",
+      "direction": 110,
+      "A": 2.8,
+      "B": 0.97,
+      "C": 3.09,
+      "D": 0.95,
+      "E": 0.3,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-112",
+      "year": 2023,
+      "arm": "3",
+      "direction": 136,
+      "A": 2.52,
+      "B": 0.95,
+      "C": 2.61,
+      "D": 0.94,
+      "E": 0.1,
+      "note": [
+        "",
+        "tiny one"
+      ]
+    },
+    {
+      "saguaro_id": "28-112",
+      "year": 2023,
+      "arm": "4",
+      "direction": 136,
+      "A": 2.75,
+      "B": 0.94,
+      "C": 3.1,
+      "D": 0.94,
+      "E": 0.4,
+      "note": [
+        "",
+        "nub"
+      ]
+    },
+    {
+      "saguaro_id": "28-112",
+      "year": 2023,
+      "arm": "5",
+      "direction": 172,
+      "A": 2.8,
+      "B": 0.97,
+      "C": 3.21,
+      "D": 0.98,
+      "E": 0.3,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-112",
+      "year": 2023,
+      "arm": "6",
+      "direction": 214,
+      "A": 3.03,
+      "B": 0.98,
+      "C": 3.35,
+      "D": 0.98,
+      "E": 0.4,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-112",
+      "year": 2023,
+      "arm": "7",
+      "direction": 248,
+      "A": 2.85,
+      "B": 0.99,
+      "C": 3.16,
+      "D": 1,
+      "E": 0.3,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-112",
+      "year": 2026,
+      "arm": "1",
+      "direction": 5,
+      "A": 2.51,
+      "B": 0.97,
+      "C": 3.98,
+      "D": 0.98,
+      "E": 0.85,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-112",
+      "year": 2026,
+      "arm": "2",
+      "direction": 118,
+      "A": 2.8,
+      "B": 0.92,
+      "C": 3.14,
+      "D": 0.91,
+      "E": 0.25,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-112",
+      "year": 2026,
+      "arm": "3",
+      "direction": 130,
+      "A": 2.57,
+      "B": 0.92,
+      "C": 2.66,
+      "D": 0.92,
+      "E": 0.15,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-112",
+      "year": 2026,
+      "arm": "4",
+      "direction": 131,
+      "A": 2.7,
+      "B": 0.92,
+      "C": 3.16,
+      "D": 0.92,
+      "E": 0.35,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-112",
+      "year": 2026,
+      "arm": "5",
+      "direction": 174,
+      "A": 2.81,
+      "B": 0.91,
+      "C": 3.23,
+      "D": 0.92,
+      "E": 0.35,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-112",
+      "year": 2026,
+      "arm": "6",
+      "direction": 238,
+      "A": 3.03,
+      "B": 0.93,
+      "C": 3.33,
+      "D": 0.93,
+      "E": 0.35,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-112",
+      "year": 2026,
+      "arm": "7",
+      "direction": 248,
+      "A": 2.85,
+      "B": 0.94,
+      "C": 3.19,
+      "D": 0.97,
+      "E": 0.4,
+      "note": ""
+    },
+    {
+      "saguaro_id": "28-112",
+      "year": 2026,
+      "arm": "8",
+      "direction": 249,
+      "A": 3.13,
+      "B": 0.95,
+      "C": null,
+      "D": null,
+      "E": null,
+      "note": [
+        "",
+        "nubbin, racket-ball size",
+        "Nubbin (Racket-ball size)",
+        "nubbin (racket-ball size)"
+      ]
+    }
+  ],
+  "_opaque_sheet_map": {
+    "sheet_A.png": {
+      "true_year": 2023,
+      "source_file": "Pl-28_2023_16-305__p20.png",
+      "redaction_status": "hand"
+    },
+    "sheet_B.png": {
+      "true_year": 2026,
+      "source_file": "Pl-28_2026_108-305__p05.png",
+      "redaction_status": "hand"
+    }
+  },
+  "_opaque_photo_map": {
+    "2023_01.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_002.jpg"
+    },
+    "2026_01.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_002.jpg"
+    },
+    "2026_02.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_001.jpg"
+    },
+    "2026_03.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_004.jpg"
+    },
+    "2023_02.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_001.jpg"
+    },
+    "2026_04.jpg": {
+      "true_year": 2026,
+      "source_file": "photo_003.jpg"
+    },
+    "2023_03.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_003.jpg"
+    },
+    "2023_04.jpg": {
+      "true_year": 2023,
+      "source_file": "photo_004.jpg"
+    }
+  }
+}
