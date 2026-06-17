@@ -63,4 +63,3 @@ and `terminator_shimmed` per rollout so the surface is fully reconstructable.
 5. Per-difficulty breakdown with per-bucket n.
 6. Cost / reward-per-dollar / median latency.
 7. Failure-class taxonomy (`scripts/failure_taxonomy.py`).
-8. The contamination check date (see [CONTAMINATION.md](CONTAMINATION.md)).

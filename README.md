@@ -105,15 +105,15 @@ Notes are mostly empty (43 of 376 rows carry one) and matched leniently, so per-
 
 46-task set, models run in their **native CLIs** at default/low reasoning, 3 rollouts each. Per-cell accuracy; 95% CIs are task-level bootstrap (n = 46).
 
-| Model | Harness | Mean | 95% CI | clean-24 | recovered |
-|---|---|---|---|---|---|
-| Gemini 3.1 Pro | Antigravity | **0.967** | 0.937–0.987 | 0.954 | 0.980 |
-| GPT-5.5 | Codex | 0.961 | 0.930–0.982 | 0.954 | 0.969 |
-| Gemini 3.5 Flash | Antigravity | 0.957 | 0.926–0.979 | 0.944 | 0.971 |
-| Claude Opus 4.8 | Claude Code | 0.942 | 0.909–0.969 | 0.937 | 0.948 |
-| Claude Opus 4.7 | Claude Code | 0.928 | 0.892–0.957 | 0.924 | 0.932 |
-| Qwen3-VL-Plus | completion loop | 0.879 | 0.839–0.915 | 0.909 | 0.849 |
-| MiniMax-M3 | completion loop | 0.728 | 0.654–0.797 | 0.776 | 0.680 |
+| Model | Harness | Mean | 95% CI |
+|---|---|---|---|
+| Gemini 3.1 Pro | Antigravity | **0.967** | 0.937–0.987 |
+| GPT-5.5 | Codex | 0.961 | 0.930–0.982 |
+| Gemini 3.5 Flash | Antigravity | 0.957 | 0.926–0.979 |
+| Claude Opus 4.8 | Claude Code | 0.942 | 0.909–0.969 |
+| Claude Opus 4.7 | Claude Code | 0.928 | 0.892–0.957 |
+| Qwen3-VL-Plus | completion loop | 0.879 | 0.839–0.915 |
+| MiniMax-M3 | completion loop | 0.728 | 0.654–0.797 |
 
 Frontier models run on their native agent CLIs; open models run on the controlled completion loop — each on its stronger configuration (models are notably harness-dependent; see the [cross-harness study](docs/NOISE-FLOOR-STUDY.md)). The within-frontier ordering at the top is not statistically resolved at n = 46 — the CIs overlap heavily. Full numbers in [`leaderboard.json`](leaderboard.json); per-task metadata in [`INDEX.json`](INDEX.json).
 
@@ -121,8 +121,7 @@ Frontier models run on their native agent CLIs; open models run on the controlle
 
 - **46 saguaros** across six plots at Saguaro National Park — 15, 28, 40, 41B, 41F, and 6 — each measured in both 2023 and 2026.
 - **376 ground-truth rows** (2 `_excluded`), **380 field photos**, 43 rows carrying a recorder note.
-- Two subsets recorded in each `task.toml`: **clean-24** (23 fully hand-QA'd saguaros) and **recovered** (23 whose sheets were re-aligned during curation).
-- **Sheets** are hand-redacted to remove the curator's marginal arm-renumberings and stamps; realistic decoy redactions are added to sheets that needed no correction, so a redaction never signals which values are wrong. All assets are stripped of EXIF/XMP/PNG metadata at build and asserted clean ([`docs/CONTAMINATION.md`](docs/CONTAMINATION.md)).
+- **Sheets** are hand-redacted to remove the curator's marginal arm-renumberings and stamps; realistic decoy redactions are added to sheets that needed no correction, so a redaction never signals which values are wrong. All assets are stripped of EXIF/XMP/PNG metadata at build.
 - **Filenames** give nothing away on the sheets (`sheet_A`/`sheet_B`; the agent reads the date header to assign the year). Photo names carry only the year, which is anyway visible in the photo.
 
 Ground truth lives in each task's `grade/truth.json`, unreadable by the agent inside the container.
@@ -131,6 +130,5 @@ Ground truth lives in each task's `grade/truth.json`, unreadable by the agent in
 
 - [`docs/MANIFEST.md`](docs/MANIFEST.md) — sandbox + provider-route reproducibility manifest.
 - [`docs/NOISE-FLOOR-STUDY.md`](docs/NOISE-FLOOR-STUDY.md) — cross-harness and reasoning-effort study.
-- [`docs/CONTAMINATION.md`](docs/CONTAMINATION.md) — asset-hygiene / metadata-scrub audit.
 
 Full writeup, charts, and a playable task: **[typhamswann.com/cactusbench](https://typhamswann.com/cactusbench)**.
