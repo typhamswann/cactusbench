@@ -1,4 +1,4 @@
-"""Home-harness driver for SaguaroBench (Path A / H-home).
+"""Home-harness driver for CactusBench (Path A / H-home).
 
 The OpenRouter harness (run.py) scores every model on ONE portable surface. But
 Cai §1 requires also scoring each frontier model under the harness it was

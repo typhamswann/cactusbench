@@ -1,4 +1,4 @@
-"""Tool definitions + dispatch for the SaguaroBench OpenRouter loop.
+"""Tool definitions + dispatch for the CactusBench OpenRouter loop.
 
 The model emits one tool call per turn as a JSON object:
 

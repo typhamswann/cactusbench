@@ -1,4 +1,4 @@
-"""Render the single per-task prompt (instruction.md) for SaguaroBench
+"""Render the single per-task prompt (instruction.md) for CactusBench
 curation tasks.
 
 DeepSWE convention: each task has ONE prompt file. The agent (mini-swe-agent,

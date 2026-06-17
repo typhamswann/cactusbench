@@ -1,0 +1,71 @@
+schema_version = "1.1"
+artifacts = []
+
+[task]
+name = "cactusbench-curation/15-66"
+description = "Curate the full cross-year arm-measurement table for saguaro 15-66 on plot 15. Difficulty: medium."
+authors = ["Ty Pham-Swann"]
+keywords = ["multimodal", "vlm", "saguaro", "curation", "digitization", "cactusbench"]
+
+[metadata]
+ext_id = "cactusbench-curation-15-66"
+task_id = "15-66"
+display_title = "Curate 15-66"
+display_description = "Read hand-redacted volunteer field forms + field photos for saguaro 15-66 (2023 and 2026), match arms across years, produce the cleaned canonical-arm table. Difficulty: medium."
+category = "multimodal-curation"
+language = "english"
+repository_url = "https://github.com/typhamswann/cactusbench"
+plot = "15"
+split = "test"
+difficulty = "medium"
+n_arms_2023 = 6
+n_arms_2026 = 6
+n_truth_rows_scored = 12
+n_truth_rows_excluded = 0
+n_notes_with_override = 0
+n_photos = 8
+redaction_status_2023 = "hand"
+redaction_status_2026 = "hand"
+redaction_status = "hand"
+# headline_scored = false when the two years use different redaction styles, so
+# redaction artifacts cannot leak the year into the headline number (guidance §2b).
+headline_scored = true
+max_turns_per_rollout = 50
+
+[verifier]
+timeout_sec = 300.0
+user = "root"
+
+[verifier.env]
+
+[agent]
+timeout_sec = 1800.0
+user = "agent"
+
+[environment]
+build_timeout_sec = 600.0
+docker_image = "cactusbench-task:1.0"
+os = "linux"
+cpus = 1
+memory_mb = 2048
+storage_mb = 2048
+gpus = 0
+allow_internet = false
+mcp_servers = []
+
+[environment.env]
+
+# Sandbox + harness manifest (Cai §4 / guidance §4). A buyer cannot re-run the
+# benchmark without these. See docs/MANIFEST.md for the canonical, run-wide copy.
+[manifest]
+max_turns_per_rollout = 50
+network_egress_policy = "none"        # allow_internet=false; no egress in-task
+tool_approval_policy = "auto"          # tools execute without human approval
+isolation_granularity = "per-task-container"
+observation_truncation_policy = "text>=50000 chars truncated; images elided beyond a sliding window (default 6)"
+asset_metadata_policy = "stripped"     # EXIF/XMP/PNG-text removed + asserted at build
+filename_policy = "opaque"             # sheet_{A,B}.png, photo_NNN.jpg; year hidden
+
+[solution]
+
+[solution.env]

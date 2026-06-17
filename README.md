@@ -1,57 +1,26 @@
-# [SaguaroBench](https://github.com/typhamswann/saguaro-bench)
+# [CactusBench](https://typhamswann.com/cactusbench)
 
-SaguaroBench is a benchmark for measuring multimodal language models on a
-real-world citizen-science **curation** task: reading hand-written field
-forms and field photos, then producing the cleaned, cross-year-matched
-arm-measurement table that a human curator would have produced.
+CactusBench measures multimodal models on a real scientific data-curation task: reading hand-written field forms and field photos of saguaro cacti, then producing the cleaned, cross-year-matched arm-measurement table a human biologist would have produced. The public set is **46 tasks** drawn from six plots at Saguaro National Park, each one saguaro measured in both 2023 and 2026.
 
-Biologists measure saguaro cacti every few years on the same plot. They
-record per-arm measurements (direction, base height, tip height, arm
-length, recorder notes) on paper field-forms, numbering each saguaro's
-arms independently each visit. A curator then takes both years' raw
-sheets + photos and produces one cleaned spreadsheet: matched arms
-across years, canonical arm numbers, every measurement and note
-re-keyed into the canonical schema — and quietly QA/QCs the data,
-correcting field mistakes against what the recorder clearly intended.
+Biologists re-measure every saguaro's arms on a plot every few years — compass direction, base height, tip height, arm length, and free-text notes — numbering the arms independently on each visit. A curator then reconciles both years' raw sheets and photos into one canonical table: arms matched across years, re-keyed to a single numbering, and quietly QA'd against the recorder's obvious slips. CactusBench turns that workflow into a benchmark. The agent gets two field forms and the field photos in a plain Unix workspace and must derive the saguaro id, which sheet is which year, the arm count, the cross-year matching, and the cleaned values itself — none of it is in the prompt.
 
-This benchmark turns that curator workflow into a 25-task evaluation.
-Each task is one saguaro from plot 41B. The agent gets two field forms
-and a handful of field photos under **opaque filenames** — it is told
-neither the saguaro id, which sheet is which year, nor how many arms
-exist. It must derive all of that from the sheets and photos, then write
-the full cleaned table to `submission.json`. The convention (per the
-curator): the 2023 paper-arm numbers ARE the canonical arm labels, and
-each 2026 arm is re-keyed to the canonical number of the 2023 arm it
-matches. **Scoring is per-cell with field-typed tolerances**, so every
-measurement and every recorder-note contributes independently to the
-reward.
+Frontier models reach ~0.93–0.97 per-cell accuracy but none reach the precision a biologist needs to trust the table unattended, and failures are dominated by handwriting OCR rather than reasoning. The full failure taxonomy, cross-harness sensitivity, reasoning-effort ablation, reproducibility manifest, and a playable task are on the site: **[typhamswann.com/cactusbench](https://typhamswann.com/cactusbench)**.
 
 ## Task format
 
-SaguaroBench tasks use the [Harbor](https://www.harborframework.com/docs/tasks)
-task format. The agent sees a normal Unix workspace and writes a JSON
-file to a known path — there is no benchmark-specific CLI to learn:
+CactusBench tasks use the [Harbor](https://www.harborframework.com/docs/tasks) task format:
 
 ```text
-task.toml          Metadata: saguaro_id, plot, split, difficulty,
-                   redaction status, row/photo counts, resource limits
-instruction.md     THE prompt — task statement + measurement-column
-                   reference + opaque asset inventory + output schema +
-                   canonical-numbering convention + QA/QC mandate. One file,
-                   near-identical across tasks; the only per-task variation
-                   is the photo count. (DeepSWE shape: the task is pure
-                   prompt content; the agent supplies its own system prompt.)
-assets/            Bundled into /workspace/ at build time, with OPAQUE names
-  datasheets/      sheet_A.png, sheet_B.png — one is 2023, one is 2026
-  photos/          photo_001.jpg, photo_002.jpg, ... — mixed years
-grade/             Verifier-only — root-owned + mode 0700 inside the image
-  truth.json       Ground truth rows (with v2 note overrides + _excluded
-                   rows) + scoring schema (scored_fields, tolerances)
-  score.py         Stdlib-only per-cell scorer
-environment/       Dockerfile that bakes assets into /workspace, grade/
-                   into /grade, and gives the workspace to an `agent` user
-tests/test.sh      Verifier entry point — runs `python3 /grade/score.py …`
-                   and writes /logs/verifier/reward.{json,txt}
+task.toml         Metadata: saguaro_id, plot, split, difficulty, redaction status, counts, limits
+instruction.md    The prompt the agent sees — task statement, column reference, output schema
+assets/
+  datasheets/     sheet_A.png, sheet_B.png — one per year, hand-redacted; the filename gives nothing away
+  photos/         2023_NN.jpg, 2026_NN.jpg — field photos (year in the name, within-year index opaque)
+grade/            Verifier-only (root-owned, mode 0700 in the image)
+  truth.json      Ground-truth rows + scoring schema (scored_fields, tolerances)
+  score.py        Stdlib-only per-cell scorer
+environment/      Dockerfile (FROM cactusbench-base:1.0) baking assets → /workspace, grade → /grade
+tests/test.sh     Verifier entry point → /logs/verifier/reward.{json,txt}
 ```
 
 ### The agent's contract
@@ -60,354 +29,108 @@ Inside the container the agent works in `/workspace/`:
 
 ```
 /workspace/
-├── instruction.md              the full task prompt + I/O contract
-├── datasheets/
-│   ├── sheet_A.png             hand-redacted field form (year unknown from filename)
-│   └── sheet_B.png             hand-redacted field form (year unknown from filename)
-├── photos/
-│   ├── photo_001.jpg           field photo, year unknown
-│   ├── photo_002.jpg           ...
-│   └── photo_NNN.jpg
-└── submission.json             ← agent writes its full cleaned table here
+├── instruction.md      task statement + measurement-column reference + output schema
+├── datasheets/         sheet_A.png, sheet_B.png   (which sheet is which year is NOT given)
+├── photos/             2023_NN.jpg, 2026_NN.jpg
+└── submission.json     ← the agent writes its cleaned table here
 ```
 
-The agent uses whatever file-read primitive it already has (Claude Code's
-`Read`, Codex's image-aware `read`, etc.) to look at the PNG/JPG assets,
-and whatever write primitive (`Write`, `apply_patch`, `bash: echo ... >
-submission.json`) to produce `submission.json`. There is no custom CLI,
-no view buffer, no tool-call indirection. This matches
-[deep-swe](https://github.com/datacurve-ai/deep-swe)'s shape: workspace
-+ instruction + write your answer to a known path.
-
-`submission.json` must be a JSON list of row objects. Each row:
+It reads the PNG/JPG assets with whatever image-read primitive it already has (Claude Code's `Read`, Codex's image read, …) and writes `submission.json` — a JSON list with one row per `(year, canonical_arm)`:
 
 ```json
-{
-  "saguaro_id": "41B-13",
-  "year": 2023,
-  "arm": "1",
-  "direction": 360,
-  "A": 1.89,
-  "B": 0.98,
-  "C": 2.04,
-  "D": 0.98,
-  "E": 0.2,
-  "note": ""
-}
+{ "saguaro_id": "15-66", "year": 2023, "arm": "1", "direction": 359,
+  "A": 3.21, "B": 0.98, "C": 3.99, "D": 0.99, "E": 0.6, "note": "" }
 ```
 
-Output one row per `(year, canonical_arm)`. The prompt does **not** list
-how many arms exist, the saguaro id, or which sheet is which year — the
-agent derives all of that. Canonical numbering follows the curator
-convention: the 2023 paper-arm numbers are the canonical labels, and each
-2026 arm takes the canonical number of the 2023 arm it matches (new
-2026-only arms continue the numbering). The agent also QA/QCs: where a
-field measurement is clearly a recording slip, the curated value may
-diverge from the literal sheet to reflect what the recorder intended.
-
-## Scoring
-
-Per-cell match against ground truth. Rows are keyed by `(year, arm)` — each task
-is a single saguaro, so `saguaro_id` is constant and is scored as an ordinary cell
-rather than part of the key (keying by `saguaro_id` would let one constant id-slip,
-e.g. copying the prompt's placeholder, zero the whole task — a fragile penalty
-unrelated to the curation skill). Field-typed tolerances:
-
-| field | match rule |
-|---|---|
-| `direction` | numeric, ±1.0° |
-| `A`, `B`, `C`, `D`, `E` | numeric, ±0.011 m |
-| `note` | normalized-exact OR **list-of-acceptable** (empty=empty). Jaccard is **off the headline** — diagnostic only |
-| `saguaro_id` | normalized string equality |
-
-**Notes are 94% empty** (223/237 truth rows), so the raw `note` per-field accuracy
-mostly measures "did the model blank the field." The scorer therefore also reports
-`note_accuracy_nonempty` (accuracy over the 14 non-empty-note rows that actually
-test transcription) and `note_accuracy_jaccard_diag` (what the note field would
-score under the retired Jaccard rule) — neither feeds `cell_accuracy_reward`.
-
-Missing rows score 0 across all their cells. **Extra (hallucinated)
-rows** incur a 5% penalty each, capped at 50%. **Excluded rows** (truth
-rows where the paper is genuinely ambiguous or known-wrong) are skipped
-entirely by scoring — neither the truth cells nor an agent submission at
-that key count.
-
-Final reward: `cell_accuracy_reward = max(0, correct/total - extra_penalty)` in `[0, 1]`.
-
-Per-task `reward.json`:
-
-```json
-{
-  "cell_accuracy_reward":  0.952,
-  "base_cell_accuracy":    0.967,
-  "extra_row_penalty":     0.015,
-  "row_f1":                0.978,
-  "rows_truth":            15,
-  "rows_pred_scored":      15,
-  "rows_matched":          15,
-  "rows_missing":          0,
-  "rows_extra":            0,
-  "rows_excluded":         0,
-  "per_field_accuracy": {
-    "saguaro_id": 1.0, "direction": 1.0,
-    "A": 1.0, "B": 1.0, "C": 0.933, "D": 1.0, "E": 1.0,
-    "note": 0.867
-  },
-  "note_accuracy_nonempty": 0.8,
-  "note_nonempty_total": 5,
-  "note_accuracy_jaccard_diag": 0.933,
-  "saguaro_id": "41B-13"
-}
-```
-
-`row_f1`, `per_field_accuracy`, and the `note_accuracy_*` diagnostics are
-informational; `cell_accuracy_reward` is the primary metric.
-
-### Why notes are list-of-acceptable
-
-During curation QA the user surfaced cases where the recorder note is
-inherently ambiguous: e.g. "5 nubbins" vs "5 nubbins!" (same content,
-the recorder wrote the second on one sheet and the first on another),
-"DOUBLE / JOINED @ THE BASE BUT SEPARATED" written across two arm rows
-where it could be attributed to either, "Don checked on 2/9/26 + this
-should be 3.045" QA-overlay that survived hand-redaction. The truth
-file stores all defensible note phrasings as a list; a match against
-any list member counts the cell as correct. See the upstream paper-
-faithful overrides in `data/curation_dataset_v2.json` for the full
-audit trail.
-
-The list-of-acceptable mechanism (not fuzzy Jaccard) is what carries the headline:
-Jaccard ≥0.5 is both gameable (pad a note with common tokens) and inflatable
-(empty=empty scores free), so it was moved off `cell_accuracy_reward` and is now a
-diagnostic only.
+The prompt gives neither the saguaro id, the arm count, nor which sheet is which year — the agent derives all of it. Canonical numbering follows the curator convention: the 2023 paper-arm numbers are the canonical labels, and each 2026 arm takes the number of the 2023 arm it matches (new 2026-only arms continue the sequence). The agent is also expected to QA: where a measurement is a clear recording slip, the curated value may diverge from the literal sheet to reflect what the recorder intended.
 
 ## Quickstart
 
-### Path A — Harbor / Pier (canonical)
-
-Any [Harbor](https://www.harborframework.com/)-compatible runtime works.
-Build the base image once (it's just `python:3.11-slim` + `jq`), then run:
+Any [Harbor](https://www.harborframework.com/)-compatible runtime works. Build the base image once, then run:
 
 ```bash
-git clone https://github.com/typhamswann/saguaro-bench
-cd saguaro-bench
-docker build -t saguaro-bench-base:1.0 base/        # build once
+git clone https://github.com/typhamswann/cactusbench
+cd cactusbench
+docker build -t cactusbench-base:1.0 base/        # build once
 harbor run -p tasks --agent <agent> --model <model>
-# or, using pier (DeepSWE's runner):
-pier run -p tasks --agent claude-code --model anthropic/claude-opus-4-7
 ```
 
-Each task image is `FROM saguaro-bench-base:1.0` and bakes in its own
-assets + ground truth. The verifier emits `cell_accuracy_reward ∈ [0,
-1]` per task; Harbor / Pier collate per-task rewards into a leaderboard.
+Each task image is `FROM cactusbench-base:1.0` and bakes in its own assets + ground truth; the verifier emits `cell_accuracy_reward ∈ [0, 1]` per task, which Harbor collates into a leaderboard.
 
-### Path B — OpenRouter harness (six models pre-wired)
-
-For quick iteration across arbitrary OpenRouter models — no Docker
-required at runtime. See `harness/README.md` for full docs.
+Sanity-check a single task without an agent:
 
 ```bash
-export OPENROUTER_API_KEY=sk-or-v1-...
-# Scored run: pin the route + reasoning budget, ≥5 rollouts for CIs (see docs/MANIFEST.md).
-python harness/run.py --models all --max-turns 50 --rollouts 5 \
-       --reasoning medium --pin-provider Google --cost-cap 20
+docker build -t cb-task -f tasks/15-66/environment/Dockerfile tasks/15-66
+docker run --rm --user root -v "$PWD/tasks/15-66/tests:/tests:ro" cb-task bash -c '
+  echo "[]" > /workspace/submission.json          # empty placeholder
+  bash /tests/test.sh; cat /logs/verifier/reward.json'
 ```
 
-Results land at `runs/<run-id>/<model_tag>.json` with, **per rollout**:
-`cell_accuracy_reward`, `row_f1`, per-field + note diagnostics, cost in USD, the
-served backend (`served_providers_rollout`), `pin_provider`/`provider_mismatch`,
-the reasoning budget, `engaged` + `terminator_shimmed` flags, and the
-transmitted-image manifest (`image_manifest`: bytes/width/height per attachment) +
-`n_assets_read`. Then aggregate:
+`/grade/` is root-owned mode 0700, so the agent user cannot read the truth.
+
+### Controlled harness
+
+`harness/run.py` is a self-contained image→tool-call completion loop for running the set across models without Harbor — first-party routes for frontier models (Anthropic via Bedrock, OpenAI, Google) and OpenRouter for open models. See [`harness/README.md`](harness/README.md).
 
 ```bash
-python scripts/aggregate.py runs/<run-id>          # leaderboard: raw+engaged means, 95% CIs, reward/$
-python scripts/failure_taxonomy.py runs/<run-id>   # per-model failure-class table
-python scripts/stratify.py --config a=runs/<A> --config b=runs/<B>   # cross-harness spread
+python harness/run.py --models all --tasks-dir tasks --rollouts 3 --max-turns 50
+python scripts/aggregate.py runs/<run-id>          # leaderboard: means, 95% CIs, reward/$
 ```
 
-See [docs/TEST-MATRIX.md](docs/TEST-MATRIX.md) for the full 2026 model/harness run plan.
+## Scoring
 
-### Subsets and single tasks
+Per-cell match against ground truth, keyed by `(year, arm)`. Each task is a single saguaro, so `saguaro_id` is scored as an ordinary cell rather than part of the key. Field-typed tolerances:
 
-```bash
-harbor run -p saguaro-bench/tasks --agent <agent>             # all 25
-harbor run -p saguaro-bench/tasks --agent <agent> --n-tasks 4 # first 4
-harbor run -p saguaro-bench/tasks/41B-13 --agent <agent>      # one task
+| field | match rule |
+|---|---|
+| `direction` | numeric, circular, ±1.0° |
+| `A` `B` `C` `D` `E` | numeric, ±0.011 m |
+| `note` | normalized-exact, or any member of a list of accepted phrasings (empty = empty) |
+| `saguaro_id` | normalized string equality |
+
+Two structural rules reflect the real task:
+
+- **Year-tolerant matching.** A model's two surveys are mapped to the truth years by chronological order, so reading the early/late ordering right but writing the wrong absolute year is not penalized — while genuinely swapping which sheet is which year still is.
+- **Ambiguous arms.** A few truth rows are flagged `_excluded` (the paper is genuinely ambiguous — e.g. a partial nubbin recorded inconsistently across years). They are skipped entirely: present-or-absent both score, and the cells count for no one.
+
+Missing rows score 0 across their cells; extra (hallucinated) rows cost 5% each, capped at 50%:
+
+```
+cell_accuracy_reward = max(0, correct / total − extra_penalty)   ∈ [0, 1]
 ```
 
-### Sanity-check a single task without an agent
+Notes are mostly empty (43 of 376 rows carry one) and matched leniently, so per-task `reward.json` also breaks out `note_accuracy_nonempty` and per-field accuracy alongside `row_f1` and the structural counts — `cell_accuracy_reward` is the headline.
 
-```bash
-docker build -t sab-task -f tasks/41B-13/environment/Dockerfile tasks/41B-13
-docker run --rm sab-task bash -c '
-  cat instruction.md
-  ls datasheets photos
-'
-# Then grade a submission (root mode since /grade is locked):
-docker run --rm --user root \
-  -v "$PWD/tasks/41B-13/tests:/tests:ro" sab-task \
-  bash -c '
-    echo "[]" > /workspace/submission.json   # placeholder
-    bash /tests/test.sh
-    cat /logs/verifier/reward.json
-  '
-```
+## Leaderboard
 
-The image's `WORKDIR` is `/workspace` and the default user is `agent`.
-`/grade/` is root-owned mode 0700 — only the verifier can read the
-truth.
+46-task set, models run in their **native CLIs** at default/low reasoning, 3 rollouts each. Per-cell accuracy; 95% CIs are task-level bootstrap (n = 46).
+
+| Model | Harness | Mean | 95% CI | clean-24 | recovered |
+|---|---|---|---|---|---|
+| Gemini 3.1 Pro | Antigravity | **0.967** | 0.937–0.987 | 0.954 | 0.980 |
+| GPT-5.5 | Codex | 0.961 | 0.930–0.982 | 0.954 | 0.969 |
+| Gemini 3.5 Flash | Antigravity | 0.957 | 0.926–0.979 | 0.944 | 0.971 |
+| Claude Opus 4.8 | Claude Code | 0.942 | 0.909–0.969 | 0.937 | 0.948 |
+| Claude Opus 4.7 | Claude Code | 0.928 | 0.892–0.957 | 0.924 | 0.932 |
+| Qwen3-VL-Plus | completion loop | 0.879 | 0.839–0.915 | 0.909 | 0.849 |
+| MiniMax-M3 | completion loop | 0.728 | 0.654–0.797 | 0.776 | 0.680 |
+
+Frontier models run on their native agent CLIs; open models run on the controlled completion loop — each on its stronger configuration (models are notably harness-dependent; see the [cross-harness study](docs/NOISE-FLOOR-STUDY.md)). The within-frontier ordering at the top is not statistically resolved at n = 46 — the CIs overlap heavily. Full numbers in [`leaderboard.json`](leaderboard.json); per-task metadata in [`INDEX.json`](INDEX.json).
 
 ## Dataset
 
-- **Plot:** 41B (Saguaro National Park, Arizona). The same plot was
-  re-measured by biologists in 2023 and 2026.
-- **Saguaros:** 25, each appearing in both years. **237 scored truth
-  rows** + **2 excluded rows** (genuinely ambiguous arm-4 geometry on
-  saguaro 41B-06, both years — flagged in `data/curation_dataset_v2.json`).
-- **Splits** (stratified by per-saguaro difficulty): 17 train / 4 val / 4
-  test. Preserved in each `task.toml` under `metadata.split`.
-- **Difficulty distribution:** 1 easy / 17 medium / 7 hard.
-- **Sheets:** 50 paper data-sheet scans (2 per saguaro), hand-redacted
-  to remove the curator's marginal canonical-arm renumberings,
-  "Yes/No" stamps, photo annotations, and arrow overlays. 24/25
-  saguaros are fully hand-redacted on both years; 41B-22's 2026 sheet
-  falls back to an auto-redacted version (flagged in its `task.toml`
-  as `metadata.redaction_status_2026 = "auto"`). Because mixed redaction
-  styles could leak the year from artifacts, **41B-22 is flagged
-  `headline_scored = false`** and excluded from the headline number — 24/25
-  tasks are headline-scored. All assets are stripped of EXIF/XMP/PNG-metadata
-  at build and asserted clean (see [docs/CONTAMINATION.md](docs/CONTAMINATION.md)).
-- **Photos:** 209 field photos (0–13 per saguaro). 2 saguaros have no
-  photos (recorder didn't take any); the prompt flags this.
-- **Note overrides:** 14 truth rows have paper-faithful note overrides
-  surfaced during curation QA (list-of-acceptable phrasings to handle
-  recorder variation, ambiguous placement, etc.).
+- **46 saguaros** across six plots at Saguaro National Park — 15, 28, 40, 41B, 41F, and 6 — each measured in both 2023 and 2026.
+- **376 ground-truth rows** (2 `_excluded`), **380 field photos**, 43 rows carrying a recorder note.
+- Two subsets recorded in each `task.toml`: **clean-24** (23 fully hand-QA'd saguaros) and **recovered** (23 whose sheets were re-aligned during curation).
+- **Sheets** are hand-redacted to remove the curator's marginal arm-renumberings and stamps; realistic decoy redactions are added to sheets that needed no correction, so a redaction never signals which values are wrong. All assets are stripped of EXIF/XMP/PNG metadata at build and asserted clean ([`docs/CONTAMINATION.md`](docs/CONTAMINATION.md)).
+- **Filenames** give nothing away on the sheets (`sheet_A`/`sheet_B`; the agent reads the date header to assign the year). Photo names carry only the year, which is anyway visible in the photo.
 
-Ground truth is bundled in each task's `grade/truth.json` and is unreadable
-by the agent user inside the container.
+Ground truth lives in each task's `grade/truth.json`, unreadable by the agent inside the container.
 
-### Why hand-redacted?
+## Reporting
 
-An earlier auto-redacted version of this benchmark saw scores at the
-ceiling for several frontier models on the matching task. Inspection of
-the sheets revealed that auto-redaction sometimes left visible fragments
-of the curator's canonical-arm renumbering, giving a partial shortcut.
-The hand-redacted set used here is a careful pass over each sheet by
-the curator, removing every marginal canonical number and stamp that
-leaked the answer. The curation task can only be solved by actually
-reading the recorder's handwriting.
+- [`docs/MANIFEST.md`](docs/MANIFEST.md) — sandbox + provider-route reproducibility manifest.
+- [`docs/NOISE-FLOOR-STUDY.md`](docs/NOISE-FLOOR-STUDY.md) — cross-harness and reasoning-effort study.
+- [`docs/CONTAMINATION.md`](docs/CONTAMINATION.md) — asset-hygiene / metadata-scrub audit.
 
-### Why opaque filenames?
-
-The real curator workflow is: a pile of scanned sheets and photos lands
-in the queue with no year tagging, and the curator has to read each one
-to figure out what's in it. Opaque names preserve that. They also
-prevent a benchmark shortcut where an agent infers which sheet is 2026
-from the filename instead of from the sheet's date header.
-
-## Repo layout
-
-```
-saguaro-bench/
-├── base/
-│   └── Dockerfile        saguaro-bench-base:1.0 — python:3.11-slim + jq
-├── scripts/
-│   ├── build_tasks.py    Regenerate tasks/ from saguaro_arm_matching_env
-│   └── lib/
-│       ├── brief.py      build_instruction — renders instruction.md per task
-│       └── score.py      Canonical per-cell scorer (copied verbatim per task)
-└── tasks/
-    ├── INDEX.json        Summary across all tasks
-    └── <saguaro_id>/     One per saguaro (25 total)
-        ├── instruction.md
-        ├── task.toml
-        ├── assets/{datasheets,photos}/   opaque filenames
-        ├── grade/{truth.json, score.py}  root-locked
-        ├── environment/Dockerfile
-        └── tests/test.sh
-```
-
-## Reproducibility & rigor (2026 SOTA contract)
-
-SaguaroBench is built to the bar in Sean Cai's *State of Data (May 2026)*: a
-benchmark whose headline survives scrutiny must declare its measurement surface,
-report its noise floor, and refresh against contamination. The credibility anchor
-is that **scoring is deterministic, stdlib, and has no LLM judge** — so the noise
-floor is purely model × harness, with zero judge variance.
-
-- **[docs/MANIFEST.md](docs/MANIFEST.md)** — sandbox + harness contract (50-turn
-  cap, egress/truncation policy, route + reasoning + rollout knobs). Re-runnable.
-- **[docs/TEST-MATRIX.md](docs/TEST-MATRIX.md)** — the full 2026 model/harness run
-  plan: which models, which harnesses, every scored run, per-axis cleanup.
-- **[docs/CONTAMINATION.md](docs/CONTAMINATION.md)** — provenance/n-gram check
-  (the per-arm 41B table is not web-present) + enforced metadata strip.
-- **[docs/REFRESH.md](docs/REFRESH.md)** — public 25 = dev set; scored test set
-  drawn fresh from the 184-saguaro held-back pool each cycle, truth kept private.
-- **Reporting** — `scripts/aggregate.py` (raw+engaged means, 95% bootstrap CIs,
-  per-difficulty, reward/$), `scripts/stratify.py` (cross-harness >5pp spread),
-  `scripts/failure_taxonomy.py` (per-model failure classes).
-- **Harness instrumentation** — per-rollout served backend + pin/mismatch,
-  reasoning budget, empty-response terminator shim (raw vs engaged), and the
-  transmitted-image manifest (the dominant multimodal-harness variable).
-
-## Version history
-
-- **v0.4.0** (current) — 2026 SOTA-rigor pass. Fixed a prompt self-leak (the
-  example row was a real truth row); retired Jaccard from the headline note metric
-  + added non-empty-note conditioning; enforced asset-metadata stripping at build;
-  flagged mixed-redaction 41B-22 out of the headline; added per-rollout provider
-  pin/disclosure, an empty-response terminator shim with raw/engaged reporting,
-  reasoning-budget pinning, transmitted-image manifest logging, multi-rollout +
-  bootstrap CIs, a held-back-pool test-draw, and the `aggregate`/`stratify`/
-  `failure_taxonomy` reporting layer. `max_turns = 50` (declared in the prompt).
-  See `docs/` + `SOTA-PLAN.md`.
-- **v0.3.0** — Full curation task. Agent reads opaque-named
-  hand-redacted sheets + opaque-named photos, produces the cleaned
-  cross-year arm-measurement table. Per-cell scoring with field-typed
-  tolerances (direction ±1°, A/B/C/D/E ±0.011 m, note list-of-acceptable
-  OR Jaccard ≥0.5). Truth pulled from `data/curation_dataset_v2.json`
-  with all paper-faithful note overrides and excluded rows.
-- **v0.2.0** — DeepSWE-style files-on-disk contract for the
-  **arm-matching** task. Agent submits a JSON mapping of 2026 arms to
-  2023 arms or "new". Tagged at
-  [v0.2.0](https://github.com/typhamswann/saguaro-bench/tree/v0.2.0).
-- **v0.1.0** — WanderBench-style narrow-tool surface (`sab harbor-step`
-  CLI), arm-matching task. Tagged at
-  [v0.1.0](https://github.com/typhamswann/saguaro-bench/tree/v0.1.0).
-
-## Local development (no Docker required)
-
-The scorer is stdlib-only Python and tasks are just files, so you can
-test the scoring path against any task without rebuilding the image:
-
-```bash
-# Build a perfect submission from the truth (sanity check):
-python3 - <<'PY'
-import json
-t = json.load(open('tasks/41B-13/grade/truth.json'))
-rows = []
-for r in t['truth_rows']:
-    if r.get('_excluded'): continue
-    rr = {k: r[k] for k in ('saguaro_id','year','arm','direction','A','B','C','D','E')}
-    n = r.get('note', '')
-    if isinstance(n, list): n = next((x for x in n if x), '')
-    rr['note'] = n
-    rows.append(rr)
-open('/tmp/sub.json','w').write(json.dumps(rows))
-PY
-python3 tasks/41B-13/grade/score.py /tmp/sub.json tasks/41B-13/grade/truth.json
-# -> {"cell_accuracy_reward": 1.0, ..., "row_f1": 1.0, ...}
-```
-
-## Full curation pipeline
-
-This 25-task slice is the frozen benchmark. The full saguaro-curation
-RL environment covers all 7 plots and 217 saguaros with the same Harbor
-+ DeepSWE-style packaging. Available under separate terms.
-
-For access, contact phamswannty@gmail.com.
-
-## License
-
-MIT.
+Full writeup, charts, and a playable task: **[typhamswann.com/cactusbench](https://typhamswann.com/cactusbench)**.

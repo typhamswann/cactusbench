@@ -1,4 +1,4 @@
-# SaguaroBench reproducibility manifest
+# CactusBench reproducibility manifest
 
 A buyer cannot re-run a benchmark without knowing the exact surface it was scored
 under (Cai §4). This is the canonical, run-wide manifest; each task also embeds a
@@ -14,12 +14,12 @@ under (Cai §4). This is the canonical, run-wide manifest; each task also embeds
 | `isolation_granularity` | per-task container (Path A) / per-task temp workspace (Path B) |
 | `observation_truncation_policy` | text reads truncated at 50,000 chars; images elided beyond a sliding window (default 6 most-recent user messages) |
 | `asset_metadata_policy` | stripped + asserted clean at build (EXIF/XMP/IPTC/PNG-text removed) |
-| `filename_policy` | opaque — `sheet_{A,B}.png`, `photo_NNN.jpg`; year hidden |
-| `docker_image` | `saguaro-bench-base:1.0` (`python:3.11-slim` + `jq`); per-task `saguaro-bench-task:1.0`. Record the built digest with `docker images --digests`. |
+| `filename_policy` | sheets opaque (`sheet_A.png`/`sheet_B.png`, year hidden); photos year-tagged (`2023_NN.jpg`/`2026_NN.jpg`, within-year index opaque) |
+| `docker_image` | `cactusbench-base:1.0` (`python:3.11-slim` + `jq`); per-task `cactusbench-task:1.0`. Record the built digest with `docker images --digests`. |
 | `cpus / memory / storage` | 1 CPU / 2048 MB / 2048 MB per task |
 
 > **docker_image_digest:** pin and publish the digest of the base image you built
-> (`docker build -t saguaro-bench-base:1.0 base/ && docker images --digests`).
+> (`docker build -t cactusbench-base:1.0 base/ && docker images --digests`).
 > It is environment-specific, so it is recorded at run time, not in the repo.
 
 ## Scoring contract

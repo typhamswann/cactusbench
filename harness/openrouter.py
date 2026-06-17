@@ -51,8 +51,8 @@ def _looks_tool_related(body: str) -> bool:
 class OpenRouterClient:
     """Stateful client: accumulates cost + provider set across calls."""
 
-    def __init__(self, api_key: str, referer: str = "https://github.com/typhamswann/saguaro-bench",
-                 title: str = "saguaro-bench"):
+    def __init__(self, api_key: str, referer: str = "https://github.com/typhamswann/cactusbench",
+                 title: str = "cactusbench"):
         self.api_key = api_key
         self.referer = referer
         self.title = title

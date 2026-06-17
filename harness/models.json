@@ -1,6 +1,6 @@
 {
   "_comment": [
-    "OpenRouter model registry for SaguaroBench (Path B harness). Tag is the short",
+    "OpenRouter model registry for CactusBench (Path B harness). Tag is the short",
     "name used in CLI args + result filenames. `slug` is the OpenRouter routing slug.",
     "`provider` (optional) pins precision/quantization or backend via OpenRouter's",
     "provider routing. For a SCORED run, also pass --pin-provider <Backend> so the",

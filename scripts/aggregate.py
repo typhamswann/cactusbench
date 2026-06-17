@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Aggregate a SaguaroBench run into a defensible leaderboard (stdlib only).
+"""Aggregate a CactusBench run into a defensible leaderboard (stdlib only).
 
 Turns the per-rollout records in runs/<run-id>/*.json into the report shape Cai's
 essay demands and a single-number leaderboard does not provide:
@@ -137,7 +137,7 @@ def summarize_model(model_file: Path, index: dict) -> dict:
 
 def render_md(rows: list[dict]) -> str:
     rows = sorted(rows, key=lambda r: r["raw_mean"], reverse=True)
-    out = ["# SaguaroBench leaderboard\n",
+    out = ["# CactusBench leaderboard\n",
            "Headline = `cell_accuracy_reward` over **headline-scored** tasks "
            "(both years hand-redacted). CIs are 95% bootstrap over tasks. "
            "Cell-level accuracy is shown for reference but **cells within a saguaro "

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Per-model failure-class taxonomy for SaguaroBench (Cai §7 / guidance §7).
+"""Per-model failure-class taxonomy for CactusBench (Cai §7 / guidance §7).
 
 Aggregate-mean-only is the thing Cai mocks; the per-model failure-class breakdown
 is what makes a benchmark a service. This labels every failing scored cell with a

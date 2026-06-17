@@ -21,7 +21,7 @@ For each saguaro in the v1 25-saguaro 41B set, this writes:
             truth.json            v2 truth_rows (with notes/excluded) +
                                   scoring schema (scored_fields, tolerances)
             score.py              stdlib-only per-cell scorer
-        environment/Dockerfile    FROM saguaro-bench-base; COPYs assets to
+        environment/Dockerfile    FROM cactusbench-base; COPYs assets to
                                   /workspace, grade/ to /grade (root-locked),
                                   agent user owns /workspace
         tests/test.sh             python3 /grade/score.py /workspace/submission.json
@@ -234,7 +234,7 @@ def write_task(sid: str, truth_rows: list, split: str, difficulty: str,
     (task_dir / "tests").mkdir()
 
     # Deterministic per-saguaro seed so the opaque shuffle is reproducible.
-    rng = random.Random(f"saguaro-bench-curation::{sid}")
+    rng = random.Random(f"cactusbench-curation::{sid}")
 
     # ---- Datasheets (prefer hand-redacted v2, fall back to v1 auto) --------
     # Bundle both years' sheets but rename to opaque sheet_A.png / sheet_B.png.
@@ -324,19 +324,19 @@ def write_task(sid: str, truth_rows: list, split: str, difficulty: str,
 artifacts = []
 
 [task]
-name = "saguarobench-curation/{sid}"
+name = "cactusbench-curation/{sid}"
 description = "Curate the full cross-year arm-measurement table for saguaro {sid} on plot 41B. Difficulty: {diff}."
 authors = ["Ty Pham-Swann"]
-keywords = ["multimodal", "vlm", "saguaro", "curation", "digitization", "saguaro-bench"]
+keywords = ["multimodal", "vlm", "saguaro", "curation", "digitization", "cactusbench"]
 
 [metadata]
-ext_id = "saguarobench-curation-{sid}"
+ext_id = "cactusbench-curation-{sid}"
 task_id = "{sid}"
 display_title = "Curate {sid}"
 display_description = "Read hand-redacted volunteer field forms + field photos for saguaro {sid} (2023 and 2026), match arms across years, produce the cleaned canonical-arm table. Difficulty: {diff}."
 category = "multimodal-curation"
 language = "english"
-repository_url = "https://github.com/typhamswann/saguaro-bench"
+repository_url = "https://github.com/typhamswann/cactusbench"
 plot = "{derive_plot(sid)}"
 split = "{split}"
 difficulty = "{diff}"
@@ -366,7 +366,7 @@ user = "agent"
 
 [environment]
 build_timeout_sec = 600.0
-docker_image = "saguaro-bench-task:1.0"
+docker_image = "cactusbench-task:1.0"
 os = "linux"
 cpus = 1
 memory_mb = 2048
@@ -395,7 +395,7 @@ filename_policy = "opaque"             # sheet_{{A,B}}.png, photo_NNN.jpg; year 
     (task_dir / "task.toml").write_text(task_toml)
 
     # ---- environment/Dockerfile -------------------------------------------
-    dockerfile = """FROM saguaro-bench-base:1.0
+    dockerfile = """FROM cactusbench-base:1.0
 
 # Agent-visible workspace. Assets are baked in under OPAQUE filenames so the
 # agent can read them with its standard file-read primitive but can't tell
@@ -435,7 +435,7 @@ LOG_PFX="[verifier]"
 
 mkdir -p /logs/verifier /logs/agent /logs/artifacts
 
-echo "${{LOG_PFX}} scoring saguaro-bench (curation) task {sid}"
+echo "${{LOG_PFX}} scoring cactusbench (curation) task {sid}"
 
 python3 /grade/score.py /workspace/submission.json /grade/truth.json \\
     > /logs/verifier/reward.json
@@ -552,7 +552,7 @@ def build_test_pool(args, source_repo, v1, v2, v2_idx, sheet_map, hand_redacted_
                 if r["saguaro_id"] not in public_ids
                 and _has_both_hand(r["saguaro_id"], sheet_map, hand_redacted_dir)]
     eligible.sort()  # stable order before the seeded shuffle
-    rng = random.Random(f"saguaro-bench-test-draw::{args.seed}")
+    rng = random.Random(f"cactusbench-test-draw::{args.seed}")
     if getattr(args, "stratify", False):
         # Round-robin across plots (each plot shuffled) so the draw spans plots
         # evenly; a plot with few eligible saguaros simply contributes all it has.

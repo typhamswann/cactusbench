@@ -1,4 +1,4 @@
-"""OpenRouter harness for SaguaroBench — runs one or more models against
+"""OpenRouter harness for CactusBench — runs one or more models against
 one or more tasks, scoring via each task's stdlib-only grade/score.py.
 
 Designed to mirror the wanderbench harbor_driver.py shape so apples-to-

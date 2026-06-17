@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Surface-stratification table for SaguaroBench (Cai §1 / guidance §1).
+"""Surface-stratification table for CactusBench (Cai §1 / guidance §1).
 
 Given two or more run directories — each a DIFFERENT harness/route/image/reasoning
 configuration of the same models — compute, per (model, saguaro) cell, the spread

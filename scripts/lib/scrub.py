@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stdlib-only image metadata scrubber for SaguaroBench asset bundling.
+"""Stdlib-only image metadata scrubber for CactusBench asset bundling.
 
 Removes every metadata vector a model with a metadata-read primitive could use
 to shortcut the task (guidance §8): EXIF capture dates, GPS, XMP, camera make,

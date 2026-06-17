@@ -1,11 +1,11 @@
-# SaguaroBench 2026 SOTA test matrix
+# CactusBench 2026 SOTA test matrix
 
-What it takes to publish a SaguaroBench leaderboard that survives the scrutiny in
+What it takes to publish a CactusBench leaderboard that survives the scrutiny in
 Cai's *State of Data (May 2026)*. This is the run plan: which models, which
 harnesses, every scored run, and the per-axis considerations + cleanup.
 
 The governing fact (Cai's thesis, sharpened for a multimodal task): **the harness
-is the primary measurement instrument, and for SaguaroBench the dominant harness
+is the primary measurement instrument, and for CactusBench the dominant harness
 axis is how each surface hands the model an image** — resolution, downsampling,
 tiling. The sheets are 2200×1700 px and the task is reading handwriting at the
 limit of legibility, where a ±0.011 m tolerance on a transcribed tip-height is

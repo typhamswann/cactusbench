@@ -26,3 +26,12 @@ build/
 
 # PRIVATE held-back test cycles drawn from the pool (contain truth — never commit)
 /tasks_test/
+
+# Local dev tools / scratch (not shipped)
+/SOTA-PLAN.md
+/nubbin_year_test.html
+/audit_viewer.html
+/audit_recovered.html
+/error_review.html
+/align_fixer.html
+/tasks_test_excluded/

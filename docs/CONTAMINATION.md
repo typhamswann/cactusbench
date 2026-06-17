@@ -1,6 +1,6 @@
 # Contamination & provenance check
 
-SaguaroBench is built on **real** Saguaro National Park plot-41B field data. If the
+CactusBench is built on **real** Saguaro National Park plot-41B field data. If the
 curated answer table or the underlying per-arm survey were reachable by a web
 crawler, the test answers could already be in model pretraining corpora (Cai's
 n-gram-contamination concern; guidance §8). This file records the check so it can

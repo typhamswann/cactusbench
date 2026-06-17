@@ -1,6 +1,6 @@
-# SaguaroBench base image.
-# Build once:  docker build -t saguaro-bench-base:1.0 base/
-# Each task image is `FROM saguaro-bench-base:1.0` (see tasks/*/environment/Dockerfile).
+# CactusBench base image.
+# Build once:  docker build -t cactusbench-base:1.0 base/
+# Each task image is `FROM cactusbench-base:1.0` (see tasks/*/environment/Dockerfile).
 #
 # Contains nothing benchmark-specific — just a Python interpreter for the
 # verifier, plus `jq` for pulling reward.txt out of reward.json in test.sh.

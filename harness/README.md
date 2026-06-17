@@ -1,6 +1,6 @@
-# SaguaroBench OpenRouter harness
+# CactusBench OpenRouter harness
 
-Drop-in driver for running SaguaroBench against any model OpenRouter
+Drop-in driver for running CactusBench against any model OpenRouter
 exposes — no Docker required at runtime. Mirrors the
 [WanderBench harbor-driver shape](https://github.com/typhamswann/wanderbench-benchmark)
 so cross-benchmark comparisons against those same six models are

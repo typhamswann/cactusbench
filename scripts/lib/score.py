@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SaguaroBench curation scorer — copied verbatim into each task's grade/score.py.
+"""CactusBench curation scorer — copied verbatim into each task's grade/score.py.
 
 Verifier-side. Reads:
     /workspace/submission.json   the agent's output (list of row dicts)
@@ -125,6 +125,8 @@ def _note_match_single(pred: Any, truth: Any, *, use_jaccard: bool = False) -> b
     """
     p_norm = _norm_str(pred)
     t_norm = _norm_str(truth)
+    if t_norm == "*":  # wildcard: accept ANY predicted note for this cell
+        return True
     if p_norm == "" and t_norm == "":
         return True
     if p_norm == t_norm:
@@ -220,7 +222,7 @@ def _canon_arm(a: Any) -> str:
 
 
 def _row_key(row: dict) -> tuple:
-    """Row identity for matching. Each SaguaroBench task is ONE saguaro, so the
+    """Row identity for matching. Each CactusBench task is ONE saguaro, so the
     key is (year, canonical_arm) — saguaro_id is constant within a task and is
     scored as an ordinary cell instead. (The upstream batch env keyed by
     saguaro_id because its submissions spanned many cacti; here that would make a
@@ -312,10 +314,31 @@ def cell_accuracy_reward(pred_rows, truth):
     note_nonempty = {"correct": 0, "total": 0}
     note_jaccard = {"correct": 0, "total": 0}  # over all note cells, fuzzy rule
 
+    from itertools import permutations as _perms
+    _dgrp = {}
+    for _k, _tr in truth_by_key.items():
+        _d = _tr.get("direction")
+        _dgrp.setdefault((_k[0], round(float(_d)) if _d is not None else None), []).append(_k)
+    _pov = {}
+    for _dk, _keys in _dgrp.items():
+        if len(_keys) < 2 or _dk[1] is None:
+            continue
+        _ps = [pred_by_key.get(_k) for _k in _keys]
+        if sum(p is not None for p in _ps) < 2:
+            continue
+        def _mc(_t, _p):
+            return -1 if _p is None else sum(1 for _f in scored_fields if _field_match(_f, _p.get(_f), _t.get(_f), tolerances))
+        _best, _bs = None, -1
+        for _pm in _perms(range(len(_keys))):
+            _sc = sum(_mc(truth_by_key[_keys[_i]], _ps[_pm[_i]]) for _i in range(len(_keys)) if _ps[_pm[_i]] is not None)
+            if _sc > _bs:
+                _bs, _best = _sc, _pm
+        for _i, _k in enumerate(_keys):
+            _pov[_k] = _ps[_best[_i]]
     correct_total = 0
     total = 0
     for key, truth_row in truth_by_key.items():
-        pred_row = pred_by_key.get(key)
+        pred_row = _pov.get(key, pred_by_key.get(key))
         for field in scored_fields:
             total += 1
             per_field[field]["total"] += 1

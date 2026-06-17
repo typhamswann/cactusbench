@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SaguaroBench v2 — clean-24 re-run with corrected truth + new prompt + year-labeled photos.
+# CactusBench v2 — clean-24 re-run with corrected truth + new prompt + year-labeled photos.
 # Same harness selections / config / save-resume logic as bench_v1; only the run-id,
 # task subset (clean-24, 23 tasks — 40-101 unavailable), and inputs differ.
 #
