@@ -1,4 +1,4 @@
-"""Thin OpenRouter client — stdlib only, mirrors the wanderbench driver shape.
+"""Thin OpenRouter client — stdlib only; a minimal image→tool-call driver.
 
 Tracks served providers (so we know which backend actually answered) and
 exact $ cost (via OpenRouter's `usage.include = true`). Auto-retries on
@@ -8,8 +8,8 @@ Supports native function-calling: pass `tools` (OpenAI tool schema list) and
 the returned dict carries any `tool_calls` the model emitted, parsed
 structurally from the provider's native format (OpenRouter normalizes every
 backend — Gemma's special tokens, Gemini's format, etc. — into the same
-OpenAI `tool_calls` shape). This is what frontier agentic benchmarks
-(SWE-agent FunctionCallingParser, mini-swe-agent) use.
+OpenAI `tool_calls` shape). This is the standard function-calling shape frontier agentic
+harnesses use.
 """
 from __future__ import annotations
 
@@ -86,7 +86,7 @@ class OpenRouterClient:
         call (so callers can record it per rollout, not just per model).
         `reasoning` is OpenRouter's reasoning-budget control, e.g.
         {"effort": "high"} or {"max_tokens": 8000} — pinned per scored run so the
-        reasoning budget is a declared, reproducible variable (Cai §5).
+        reasoning budget is a declared, reproducible variable.
         Accumulates `self.cost_usd`. Raises ToolsUnsupported if `tools` was passed
         and the provider rejected it.
         """

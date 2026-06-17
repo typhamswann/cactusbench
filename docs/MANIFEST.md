@@ -1,7 +1,7 @@
 # CactusBench reproducibility manifest
 
-A buyer cannot re-run a benchmark without knowing the exact surface it was scored
-under (Cai §4). This is the canonical, run-wide manifest; each task also embeds a
+You cannot re-run a benchmark without knowing the exact surface it was scored
+under. This is the canonical, run-wide manifest; each task also embeds a
 `[manifest]` block in its `task.toml`.
 
 ## Task / sandbox contract
@@ -41,12 +41,12 @@ These choices change the number and MUST be declared with any published result:
 
 | knob | flag | default | why it matters |
 |---|---|---|---|
-| reasoning budget | `--reasoning {none,low,medium,high}` | `none` | Cai §5 — same model, different output per budget |
-| provider route | `--pin-provider <Backend>` | unpinned | Cai §3 — OpenRouter load-balances across backends with different image preprocessing; pin for a scored run |
-| rollouts / cell | `--rollouts N` | 1 (use ≥5 to score) | Cai §6 — CIs need n>1 |
-| empty-resp shim | built-in | 4 retries | Cai §2 — open-weight clean-stop pattern; `terminator_shimmed` + raw/engaged reported |
+| reasoning budget | `--reasoning {none,low,medium,high}` | `none` | same model, different output per budget |
+| provider route | `--pin-provider <Backend>` | unpinned | OpenRouter load-balances across backends with different image preprocessing; pin for a scored run |
+| rollouts / cell | `--rollouts N` | 1 (use ≥5 to score) | CIs need n>1 |
+| empty-resp shim | built-in | 4 retries | open-weight clean-stop pattern; `terminator_shimmed` + raw/engaged reported |
 | image window | `--image-window N` | 6 | truncation policy above |
-| tool surface | native function-calling, text fallback | fc | tool-shape post-training (Cai §3) |
+| tool surface | native function-calling, text fallback | fc | tool-shape post-training |
 | image handoff | base64 data URL in user message | — | resolution actually transmitted recorded per attachment (`image_manifest`) |
 
 Each result file records `served_providers_rollout`, `pin_provider`,

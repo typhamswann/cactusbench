@@ -1,7 +1,7 @@
 """Home-harness driver for CactusBench (Path A / H-home).
 
 The OpenRouter harness (run.py) scores every model on ONE portable surface. But
-Cai §1 requires also scoring each frontier model under the harness it was
+We also score each frontier model under the harness it was
 post-trained against — Claude Code (`Read`/`str_replace`), Codex CLI
 (`apply_patch`), Gemini CLI — because the image-read primitive and tool shape are
 the lab's actual production surface. The gap between that and the portable surface
@@ -23,7 +23,7 @@ point of the H-home vs H-port comparison.
 
 Agent profiles live in harness/home_agents.json (command templates per CLI).
 Verify the CLI is installed + the invocation before a scored run — see
-docs/TEST-MATRIX.md §2 (H-home).
+its native CLI.
 
 Usage:
     python harness/home_driver.py --agent claude_code --tasks 41B-09,41B-13 \
@@ -47,7 +47,7 @@ from pathlib import Path
 # Parent Claude-Code session vars must be stripped before spawning a nested CLI —
 # home_driver runs INSIDE a Claude Code session, and these leak into qwen/codex/
 # nested-claude, colliding and hanging the child agent (the cause of the Qwen Code
-# image-task hang; matches wanderbench run_native_harness._rollout_env).
+# image-task hang).
 _STRIP_PARENT_ENV = (
     "CLAUDECODE", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_ENTRYPOINT",
     "CLAUDE_EFFORT", "ANTHROPIC_MODEL", "CLAUDE_CODE_EXECPATH",

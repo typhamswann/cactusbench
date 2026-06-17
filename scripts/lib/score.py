@@ -121,7 +121,7 @@ def _note_match_single(pred: Any, truth: Any, *, use_jaccard: bool = False) -> b
     needed for the score and would only add a gameable rule to the headline (pad a
     note with common tokens to clear 0.5). Jaccard is still available as an
     OFF-headline diagnostic (``use_jaccard=True``) so we can report the gap between
-    the strict and fuzzy note metric. See guidance §9 / docs/MANIFEST.md.
+    the strict and fuzzy note metric. See docs/MANIFEST.md.
     """
     p_norm = _norm_str(pred)
     t_norm = _norm_str(truth)
@@ -306,7 +306,7 @@ def cell_accuracy_reward(pred_rows, truth):
     # Per-field stats for diagnostics.
     per_field = {f: {"correct": 0, "total": 0} for f in scored_fields}
 
-    # Note diagnostics (guidance §9): 94% of truth notes are empty, so the raw
+    # Note diagnostics: 94% of truth notes are empty, so the raw
     # note per-field accuracy mostly measures "did the model blank the field."
     # Track note accuracy conditioned on NON-EMPTY truth notes, and what the note
     # field would score under the (off-headline) Jaccard rule, so the gap is

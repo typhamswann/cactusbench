@@ -2,7 +2,7 @@
 
 Goal: choose the production-run settings per model by sweeping the knobs that add
 measurement noise, on a small, fixed 3-task probe — *before* committing to the
-expensive scored Phase 1. This is exactly Cai's discipline: pick (and declare) the
+expensive scored Phase 1. The discipline: pick (and declare) the
 measurement surface before publishing numbers.
 
 ## Results (final)
@@ -52,7 +52,7 @@ reasoning into the model name).
 
 ## The guardrail (read first — it shapes everything)
 
-"Best performance for each model" has a trap Cai names directly: if you pick the
+"Best performance for each model" has a trap: if you pick the
 flattering harness/reasoning per model and then rank models against each other,
 you've benchmark-maxxed, not measured. So the study must produce **two distinct
 artifacts**, and never conflate them:
@@ -107,7 +107,7 @@ config isn't broken. Too small to discriminate, so not a primary probe.)
 Sweep these per model; hold everything else fixed and declared. Ordered by expected
 impact for THIS task.
 
-| # | knob | levels to test | why (Cai / task) |
+| # | knob | levels to test | why |
 |---|---|---|---|
 | 1 | **image handoff** | `full` · `downsample` (cap 768 / 1568 px) · `tiles` (2×2 full-res tiles — generic high-res recovery, no per-sheet crop box needed) | the dominant axis; decides whether decimals survive to the encoder |
 | 2 | **harness / tool-shape** | your OpenRouter harness vs the model's native home agent | tool-shape post-training; native = production surface |

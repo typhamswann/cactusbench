@@ -4,13 +4,13 @@
     "name used in CLI args + result filenames. `slug` is the OpenRouter routing slug.",
     "`provider` (optional) pins precision/quantization or backend via OpenRouter's",
     "provider routing. For a SCORED run, also pass --pin-provider <Backend> so the",
-    "route is single-backend (Cai \u00a73) and --reasoning to pin the budget (Cai \u00a75).",
+    "route is single-backend and --reasoning to pin the budget.",
     "",
     "VISION GATE: this is a multimodal task \u2014 every model here must be vision-capable",
     "AT ITS ROUTE. Verify both the slug and vision support on https://openrouter.ai/models",
     "before running; a text-only route silently scores ~0 and looks like a capability",
     "gap when it is a routing error. Frontier closed models can also be run via their",
-    "provider-direct APIs / home harnesses \u2014 see docs/TEST-MATRIX.md.",
+    "provider-direct APIs / home harnesses.",
     "Slugs below are 2026 best-effort and MUST be re-verified before a scored run."
   ],
   "models": {
@@ -18,13 +18,13 @@
       "slug": "anthropic/claude-opus-4.8",
       "provider": null,
       "tier": "frontier",
-      "notes": "Anthropic flagship (verified live+vision 2026-06). Home harness = Claude Code. Watch over-correction at high reasoning (Cai)."
+      "notes": "Anthropic flagship (verified live+vision 2026-06). Home harness = Claude Code. Watch over-correction at high reasoning."
     },
     "opus_4_7": {
       "slug": "anthropic/claude-opus-4.7",
       "provider": null,
       "tier": "frontier",
-      "notes": "Reference for the 4.7->4.8 delta (verified live+vision). Higher cross-rollout determinism in Cai's data."
+      "notes": "Reference for the 4.7->4.8 delta (verified live+vision). Higher cross-rollout determinism."
     },
     "sonnet_4_6": {
       "slug": "anthropic/claude-sonnet-4.6",
@@ -64,7 +64,7 @@
       "slug": "minimax/minimax-m3",
       "provider": null,
       "tier": "open",
-      "notes": "M3 is the vision-capable MiniMax (M2.7 is text-only \u2014 verified 2026-06). Bimodal instability in Cai \u2014 use >=10 rollouts."
+      "notes": "M3 is the vision-capable MiniMax (M2.7 is text-only \u2014 verified 2026-06). Bimodal instability \u2014 use >=10 rollouts."
     },
     "kimi_k26": {
       "slug": "moonshotai/kimi-k2.6",

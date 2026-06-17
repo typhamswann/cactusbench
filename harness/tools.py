@@ -9,7 +9,7 @@ We parse, dispatch, and return either:
 - a dict with {"text": ..., "image_b64": ..., "image_mime": ...} (becomes
   a text + image_url content list)
 
-This matches the wanderbench harbor_driver pattern (one tool call per
+One tool call per
 turn, JSON-only assistant output) — universally portable across every
 chat-completions-style provider OpenRouter routes to, no provider-specific
 function-calling format required.
@@ -109,7 +109,7 @@ _IMG_MIME = {
 def _image_dims(data: bytes, suffix: str) -> tuple[int | None, int | None]:
     """Best-effort (width, height) from raw bytes, stdlib only. The image handoff
     (resolution actually transmitted) is the dominant multimodal-harness variable
-    for a handwriting-legibility task (guidance §1/§3d) — record it per attachment.
+    for a handwriting-legibility task — record it per attachment.
     """
     s = suffix.lower()
     try:
@@ -267,7 +267,7 @@ DISPATCH = {
 # Native function-calling schemas (OpenAI tool format). Passed to the model via
 # OpenRouter's `tools` parameter; OpenRouter normalizes each backend's native
 # tool-call dialect into a structured `tool_calls` field. This is the modern
-# frontier-benchmark default (SWE-agent FunctionCallingParser / mini-swe-agent).
+# frontier-benchmark default (standard function-calling).
 # -----------------------------------------------------------------------------
 
 TOOL_SCHEMAS = [

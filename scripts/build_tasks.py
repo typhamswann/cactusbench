@@ -1,4 +1,4 @@
-"""Generate per-saguaro CURATION tasks under tasks/ in DeepSWE-style layout.
+"""Generate per-saguaro CURATION tasks under tasks/ in single-prompt-per-task layout.
 
 For each saguaro in the v1 25-saguaro 41B set, this writes:
 
@@ -8,7 +8,7 @@ For each saguaro in the v1 25-saguaro 41B set, this writes:
                                   statement + domain background + opaque asset
                                   inventory + output schema + canonical
                                   numbering rules + per-year arm schedule +
-                                  scoring. DeepSWE-shape (one prompt per task,
+                                  scoring. single-prompt-per-task (one prompt per task,
                                   the agent provides its own system prompt).
         assets/
             datasheets/
@@ -92,8 +92,7 @@ MAX_TURNS = 50
 
 def _bundle_asset(src: Path, dst: Path) -> None:
     """Copy an asset into the task bundle with all metadata stripped, then assert
-    the result is clean. Enforces the no-EXIF/no-PNG-chunk property at build time
-    (guidance §8) so a leak can never silently ship."""
+    the result is clean. Enforces the no-EXIF/no-PNG-chunk property at build time so a leak can never silently ship."""
     scrub_to(src, dst)
     assert_clean(dst)
 
@@ -118,7 +117,7 @@ def parse_args() -> argparse.Namespace:
                    help="Restrict to these saguaro_ids (repeat to add more)")
     p.add_argument("--clean", action="store_true",
                    help="Wipe the output dir before regenerating")
-    # ---- Held-back-pool test draw (guidance §4c / docs/REFRESH.md) -----------
+    # ---- Held-back-pool test draw -----------
     p.add_argument("--draw-test", type=int, default=None, metavar="N",
                    help="Draw N saguaros fresh from the held-back 217-pool (excludes "
                         "the public 25 and any saguaro without both years hand-redacted), "
@@ -152,7 +151,7 @@ def derive_plot(sid: str) -> str:
 SHEET_OVERRIDES: dict[str, dict[int, str]] = {
     # 2026 "10A-22" batch off-by-one: correct page = current − 1. Verified by 8
     # header anchors (p02=11, p03=12, p05=13, p06=13A, p11=16, p17=19, p19=20,
-    # p20=21) — all exactly current−1. See docs/SHEET-AUDIT.md.
+    # p20=21) — all exactly current−1.
     "41B-11":  {2026: "Pl-41B_2026_10A-22__p02.png"},  # was p03
     "41B-12":  {2026: "Pl-41B_2026_10A-22__p03.png"},  # was p04
     "41B-13":  {2026: "Pl-41B_2026_10A-22__p05.png"},  # was p06 (=13A); p05 = saguaro 13, 10 arms
@@ -177,7 +176,7 @@ SHEET_OVERRIDES: dict[str, dict[int, str]] = {
 # Truth corrections discovered via the benchmark (cells where EVERY model
 # disagreed with the recorded truth, confirmed against the sheet by the curator).
 # Keyed (saguaro_id, year, arm-as-str, field) -> corrected value. Applied at build
-# so they survive source regeneration. See docs/SHEET-AUDIT.md.
+# so they survive source regeneration.
 # ---------------------------------------------------------------------------
 TRUTH_OVERRIDES: dict[tuple, object] = {
     ("41B-13", 2026, "5", "C"): 3.7,   # was 3.17 (typo; all 15 rollouts read 3.7 off the sheet)
@@ -280,7 +279,7 @@ def write_task(sid: str, truth_rows: list, split: str, difficulty: str,
             "source_file": src.name,
         }
 
-    # ---- instruction.md (THE prompt — single file, DeepSWE-shape) ----------
+    # ---- instruction.md (THE prompt — single file, single-prompt-per-task) ----------
     # The prompt is near-identical across all tasks: the agent is told neither
     # the saguaro id, the per-year arm schedule, nor the scoring rules. It must
     # derive the saguaro id, the canonical numbering, and the row set itself.
@@ -309,7 +308,7 @@ def write_task(sid: str, truth_rows: list, split: str, difficulty: str,
     redaction_tag = "hand" if all(s == "hand" for s in redaction_status.values()) else (
         "mixed" if "hand" in redaction_status.values() else "auto"
     )
-    # Year-invariance guard (guidance §2b/§8): if the two years are redacted in
+    # Year-invariance guard: if the two years are redacted in
     # different styles, redaction artifacts can leak the year. Such a saguaro is
     # kept in the repo for completeness but flagged OUT of the headline-scored set.
     headline_scored = all(s == "hand" for s in redaction_status.values())
@@ -350,7 +349,7 @@ redaction_status_2023 = "{redaction_status[2023]}"
 redaction_status_2026 = "{redaction_status[2026]}"
 redaction_status = "{redaction_tag}"
 # headline_scored = false when the two years use different redaction styles, so
-# redaction artifacts cannot leak the year into the headline number (guidance §2b).
+# redaction artifacts cannot leak the year into the headline number.
 headline_scored = {str(headline_scored).lower()}
 max_turns_per_rollout = {MAX_TURNS}
 
@@ -377,8 +376,8 @@ mcp_servers = []
 
 [environment.env]
 
-# Sandbox + harness manifest (Cai §4 / guidance §4). A buyer cannot re-run the
-# benchmark without these. See docs/MANIFEST.md for the canonical, run-wide copy.
+# Sandbox + harness manifest — everything needed to reproduce the scored surface.
+# See docs/MANIFEST.md for the canonical, run-wide copy.
 [manifest]
 max_turns_per_rollout = {MAX_TURNS}
 network_egress_policy = "none"        # allow_internet=false; no egress in-task
@@ -427,8 +426,7 @@ CMD ["/bin/bash"]
 # /grade/truth.json using field-typed tolerances, writes
 # /logs/verifier/reward.{{json,txt}}.
 #
-# Always exit 0 — the reward is the signal, not the exit code (mirrors deep-swe
-# and wanderbench).
+# Always exit 0 — the reward is the signal, not the exit code.
 set -euo pipefail
 
 LOG_PFX="[verifier]"
@@ -599,12 +597,12 @@ def build_test_pool(args, source_repo, v1, v2, v2_idx, sheet_map, hand_redacted_
         "n_eligible": len(eligible),
         "excluded_public": sorted(public_ids),
         "drawn": drawn,
-        "note": "PRIVATE test cycle — do not commit truth. See docs/REFRESH.md.",
+        "note": "PRIVATE test cycle — do not commit truth.",
     }, indent=2))
     print()
     print(f"  drew {len(drawn)} private test task(s) into {out_dir} (seed={args.seed!r})")
     print(f"  eligible pool size: {len(eligible)} held-back hand-redacted saguaros")
-    print(f"  ⚠ {out_dir.name}/ contains truth — keep it OUT of the public repo (see docs/REFRESH.md)")
+    print(f"  ⚠ {out_dir.name}/ contains truth — keep it OUT of the public repo")
     return 0
 
 

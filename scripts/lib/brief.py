@@ -1,12 +1,12 @@
 """Render the single per-task prompt (instruction.md) for CactusBench
 curation tasks.
 
-DeepSWE convention: each task has ONE prompt file. The agent (mini-swe-agent,
-claude-code, codex, or our OpenRouter harness) reads it as the task statement
+Each task has ONE prompt file. The agent (e.g. Claude Code, Codex,
+or the OpenRouter harness) reads it as the task statement
 and acts. The agent's own system prompt (tools/protocol) is provided by the
 agent, NOT the task — the task is pure prompt content.
 
-The prompt is intentionally near-identical across all 25 tasks: the agent is
+The prompt is intentionally near-identical across all tasks: the agent is
 NOT told the saguaro id, the per-year arm count, or the scoring rules. It must
 derive the saguaro id, the canonical arm numbering, and the full row schedule
 itself from the two field forms + photos. The only per-task substitution is the

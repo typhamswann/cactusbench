@@ -1,6 +1,6 @@
 """Native first-party provider routing for FRONTIER models.
 
-Per the user's directive (and Cai §3 — don't let a gateway confound the result):
+Pin the provider so a gateway can't confound the result:
 frontier models hit their OWN API, never OpenRouter. Only OS models use OpenRouter.
 
   anthropic/*  -> AWS Bedrock (AnthropicBedrock). Caching: EXPLICIT cache_control

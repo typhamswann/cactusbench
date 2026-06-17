@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Surface-stratification table for CactusBench (Cai §1 / guidance §1).
+"""Surface-stratification table for CactusBench.
 
 Given two or more run directories — each a DIFFERENT harness/route/image/reasoning
 configuration of the same models — compute, per (model, saguaro) cell, the spread
@@ -7,7 +7,7 @@ configuration of the same models — compute, per (model, saguaro) cell, the spr
 scaffolding-sensitive at that cell, and the headline must declare which config it
 is calibrated against.
 
-This is the rigor artifact Cai says benchmarks surviving the next twelve months
+This is the rigor artifact benchmarks surviving the next twelve months
 will ship and most will not: the headline number is one draw from a distribution
 whose width is measured here.
 

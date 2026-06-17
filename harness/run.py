@@ -1,8 +1,8 @@
 """OpenRouter harness for CactusBench — runs one or more models against
 one or more tasks, scoring via each task's stdlib-only grade/score.py.
 
-Designed to mirror the wanderbench harbor_driver.py shape so apples-to-
-apples cross-benchmark comparisons are easy:
+A small, self-contained image→tool-call loop so runs across models are
+apples-to-apples:
 
 - JSON-only tool-call protocol (one tool per turn), so every model OpenRouter
   routes to is supported without provider-specific function-calling glue.
@@ -56,13 +56,13 @@ from tools import DISPATCH, parse_tool_call, ALLOWED, TOOL_SCHEMAS
 # -----------------------------------------------------------------------------
 # System prompts — agent shape ONLY (tools + protocol). All task/domain content
 # lives in the task's instruction.md, delivered verbatim as the first user
-# message (DeepSWE convention: the task is pure prompt content; the agent
+# message (the task is pure prompt content; the agent
 # supplies its own system prompt).
 #
 # Two modes, matching what frontier agentic benchmarks do:
 #   FC   — native function-calling. The tool schemas are passed via the API's
 #          `tools` parameter; the model reasons freely and emits structured
-#          tool calls (SWE-agent FunctionCallingParser / mini-swe-agent default).
+#          tool calls (standard function-calling shape).
 #   TEXT — fallback for models without function-calling support: the model
 #          reasons, then emits one JSON tool call object (ReAct / ThoughtAction).
 # -----------------------------------------------------------------------------
@@ -226,7 +226,7 @@ def run_task(
     stop = "max_turns"
     last_error_streak = 0
     MAX_ERRORS = 5
-    # Explicit empty-response terminator shim (Cai §2). Open-weight models
+    # Explicit empty-response terminator shim. Open-weight models
     # (GLM/MiniMax-class) sometimes return content="" + tool_calls=None, which a
     # naive loop scores as an empty submission (0.0). Retry a bounded number of
     # times before giving up; tag the rollout so raw-vs-engaged means can split it.
@@ -235,7 +235,7 @@ def run_task(
     rollout_providers: list[str] = []   # served backend per call, in order
     provider_mismatch = False
 
-    # Pin the served backend so a scored run is single-route (Cai §3). OpenRouter
+    # Pin the served backend so a scored run is single-route. OpenRouter
     # silently load-balances across backends with different image preprocessing.
     eff_provider = dict(provider) if provider else None
     if pin_provider:
@@ -357,7 +357,7 @@ def run_task(
             "tool_io": cur_tool_io,
         })
 
-        # ---- Empty-response terminator shim (Cai §2) ------------------------
+        # ---- Empty-response terminator shim ------------------------
         # FC reply with no tool_calls AND empty content = the open-weight clean-
         # stop pattern. Retry rather than scoring an empty submission as zero.
         if use_fc and not tool_calls and not content.strip():
@@ -465,7 +465,7 @@ def run_task(
     images_viewed = state.get("images_viewed", [])
     # "engaged" = the rollout actually produced a submission. Open-weight models
     # that hit the empty-response terminator score 0 with no real attempt; raw vs
-    # engaged-subset means must be reported separately (Cai §2).
+    # engaged-subset means must be reported separately.
     engaged = bool(state.get("done"))
     rec = {
         "saguaro_id": sid,
@@ -582,17 +582,17 @@ def main() -> int:
                     help="comma-separated saguaro_ids or 'all' (default: all 25)")
     ap.add_argument("--tasks-dir", default=None,
                     help="task root to run against (default: tasks/). Point at a private "
-                         "tasks_test/ draw to score the held-back test set (see docs/REFRESH.md)")
+                         "tasks_test/ draw to score a held-back test set")
     ap.add_argument("--max-turns", type=int, default=50,
                     help="max tool-call turns per rollout (published contract: 50)")
     ap.add_argument("--rollouts", type=int, default=1,
                     help="rollouts per (model, task) cell — use >=5 for confidence intervals")
     ap.add_argument("--reasoning", default="none",
                     choices=["none", "low", "medium", "high"],
-                    help="pin the reasoning budget (Cai §5). Recorded per cell.")
+                    help="pin the reasoning budget. Recorded per cell.")
     ap.add_argument("--pin-provider", default=None,
                     help="pin the OpenRouter backend (e.g. 'Google', 'Z.AI') so a scored "
-                         "run is single-route; mismatches are flagged per rollout (Cai §3)")
+                         "run is single-route; mismatches are flagged per rollout")
     ap.add_argument("--temperature", type=float, default=0.6,
                     help="sampling temperature (use 0 for the lowest-variance scored runs)")
     ap.add_argument("--image-mode", default="full",
@@ -624,7 +624,7 @@ def main() -> int:
 
     api_key = os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
-        # Convenience: try ~/.openrouter_key like wanderbench's pattern.
+        # Convenience: try ~/.openrouter_key.
         key_file = Path.home() / ".openrouter_key"
         if key_file.exists():
             api_key = key_file.read_text().strip()
@@ -756,7 +756,7 @@ def main() -> int:
                       f"turns={rec.get('turns_taken')}  stop={rec.get('stop')}", flush=True)
                 _flush()  # incremental write so a SIGINT doesn't lose results
 
-        # ---- Raw vs engaged-subset summary (Cai §2) -------------------------
+        # ---- Raw vs engaged-subset summary -------------------------
         n = len(results)
         raw_mean = sum(r.get("cell_accuracy_reward", 0) for r in results) / max(1, n)
         eng = [r for r in results if r.get("engaged")]

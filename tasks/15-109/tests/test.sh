@@ -4,8 +4,7 @@
 # /grade/truth.json using field-typed tolerances, writes
 # /logs/verifier/reward.{json,txt}.
 #
-# Always exit 0 — the reward is the signal, not the exit code (mirrors deep-swe
-# and wanderbench).
+# Always exit 0 — the reward is the signal, not the exit code.
 set -euo pipefail
 
 LOG_PFX="[verifier]"

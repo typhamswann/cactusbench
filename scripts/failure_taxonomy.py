@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Per-model failure-class taxonomy for CactusBench (Cai §7 / guidance §7).
+"""Per-model failure-class taxonomy for CactusBench.
 
-Aggregate-mean-only is the thing Cai mocks; the per-model failure-class breakdown
+Aggregate-mean-only hides the story; the per-model failure-class breakdown
 is what makes a benchmark a service. This labels every failing scored cell with a
 domain-specific class, mostly deterministically from the scorer + the opaque maps
 in truth.json + the agent's submission.
@@ -18,7 +18,7 @@ Classes:
   note_error              — note cell wrong
   qaqc_over_correction    — model changed a value the sheet recorded correctly
   qaqc_under_correction   — model kept a genuine recorder slip the curator fixed
-                            (qaqc_* require `literal` in truth — see docs/REFRESH.md;
+                            (qaqc_* require `literal` in truth;
                              reported as "n/a (no literal data)" until that lands)
 
 Usage:
@@ -151,7 +151,7 @@ def main() -> int:
     lines = ["# Failure-class taxonomy\n"]
     if not has_literal:
         lines.append("> **QA/QC over/under-correction is `n/a`** — no `literal` sheet "
-                     "values in truth yet. Add them (docs/REFRESH.md §QA-QC) to unlock "
+                     "values in truth yet. Add them to unlock "
                      "the over- vs under-correction split — the marquee finding.\n")
     header = "| model | " + " | ".join(all_classes) + " |"
     lines.append(header)

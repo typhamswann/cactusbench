@@ -2,7 +2,7 @@
 """Stdlib-only image metadata scrubber for CactusBench asset bundling.
 
 Removes every metadata vector a model with a metadata-read primitive could use
-to shortcut the task (guidance §8): EXIF capture dates, GPS, XMP, camera make,
+to shortcut the task: EXIF capture dates, GPS, XMP, camera make,
 and any PNG text/time chunks. We do this by COPYING the compressed image data
 into a fresh file that contains only the structural chunks/segments — we never
 re-encode the pixels, so legibility (the whole point of the task) is untouched.

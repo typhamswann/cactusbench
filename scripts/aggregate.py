@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 """Aggregate a CactusBench run into a defensible leaderboard (stdlib only).
 
-Turns the per-rollout records in runs/<run-id>/*.json into the report shape Cai's
-essay demands and a single-number leaderboard does not provide:
+Turns the per-rollout records in runs/<run-id>/*.json into the report shape a single-number leaderboard does not provide:
 
-  * RAW vs ENGAGED-subset means (Cai §2) — open-weight models that hit the
+  * RAW vs ENGAGED-subset means — open-weight models that hit the
     empty-response terminator score 0 with no real attempt; both are reported.
-  * Bootstrap 95% CIs over tasks (Cai §6) — no point estimate without an interval.
+  * Bootstrap 95% CIs over tasks — no point estimate without an interval.
   * Cell-level accuracy with an explicit "cells within a saguaro are correlated"
     caveat — real n without overclaiming independence.
-  * Per-difficulty breakdown with per-bucket n (Cai §6) — a single mean over a
+  * Per-difficulty breakdown with per-bucket n — a single mean over a
     68%-medium set hides everything; the degenerate 1-task "easy" bucket is shown
     with its n so it can't masquerade as a real number.
-  * Note accuracy conditioned on NON-EMPTY truth notes (guidance §9).
-  * Cost + reward-per-dollar + latency Pareto (Cai §11).
+  * Note accuracy conditioned on NON-EMPTY truth notes.
+  * Cost + reward-per-dollar + latency Pareto.
   * Headline restricted to headline_scored tasks (year-invariant redaction).
 
 Usage:

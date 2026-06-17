@@ -2,8 +2,7 @@
 
 CactusBench is built on **real** Saguaro National Park plot-41B field data. If the
 curated answer table or the underlying per-arm survey were reachable by a web
-crawler, the test answers could already be in model pretraining corpora (Cai's
-n-gram-contamination concern; guidance §8). This file records the check so it can
+crawler, the test answers could already be in model pretraining corpora. This file records the check so it can
 be re-run each release.
 
 ## Method
@@ -59,7 +58,7 @@ PY
 ## Long-term defense
 
 Contamination is a moving target. The durable defense is the **held-back-pool
-rotation** (see [REFRESH.md](REFRESH.md)): the public 25 is a dev set, and the
+rotation** the public set is a dev set, and the
 scored test set is drawn fresh from the 184 held-back hand-redacted saguaros each
 cycle, with test truth kept private — so even if the public slice leaks, the
 scored numbers are computed on unseen data.

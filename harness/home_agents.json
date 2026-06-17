@@ -6,7 +6,7 @@
     "./instruction.md + ./datasheets/ + ./photos/ and write ./submission.json.",
     "VERIFY the CLI is installed and the invocation/flags are current before a",
     "scored run \u2014 these are the production harnesses the models were post-trained",
-    "against, so the exact tool surface matters (Cai). See docs/TEST-MATRIX.md \u00a72."
+    "against, so the exact tool surface matters."
   ],
   "agents": {
     "claude_code": {
@@ -102,7 +102,7 @@
         "kimi_k26"
       ],
       "image_primitive": "agent reads via Qwen Code read tool (vision auto-switch)",
-      "notes": "Qwen Code (Gemini-CLI fork). Working recipe from wanderbench run_native_harness.py: route via OPENAI_* env vars (--auth-type openai), -o text, stdin=DEVNULL. Pass --model = the OpenRouter SLUG (e.g. qwen/qwen3.7-plus)."
+      "notes": "Qwen Code (Gemini-CLI fork). Working recipe: route via OPENAI_* env vars (--auth-type openai), -o text, stdin=DEVNULL. Pass --model = the OpenRouter SLUG (e.g. qwen/qwen3.7-plus)."
     },
     "fake_perfect": {
       "cmd": [

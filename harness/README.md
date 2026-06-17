@@ -1,10 +1,8 @@
 # CactusBench OpenRouter harness
 
 Drop-in driver for running CactusBench against any model OpenRouter
-exposes — no Docker required at runtime. Mirrors the
-[WanderBench harbor-driver shape](https://github.com/typhamswann/wanderbench-benchmark)
-so cross-benchmark comparisons against those same six models are
-apples-to-apples.
+exposes — no Docker required at runtime. It is a small, self-contained image→tool-call driver, so runs are
+apples-to-apples across every model OpenRouter exposes.
 
 The agent works in a host-side `/workspace` (a temp dir per task) that
 the harness sets up from `tasks/<sid>/assets/`. Scoring shells out to the
@@ -15,7 +13,7 @@ task's stdlib-only `grade/score.py` — no container build, no model SDK.
 ```bash
 # 1. Set your OpenRouter API key.
 export OPENROUTER_API_KEY=sk-or-v1-...
-# (or write the bare key to ~/.openrouter_key — same convention as wanderbench)
+# (or write the bare key to ~/.openrouter_key)
 
 # 2. Run the six pre-configured models against all 25 tasks.
 python harness/run.py --models all --max-turns 14 --cost-cap 10
@@ -33,8 +31,8 @@ cat runs/<timestamp>/gemini35_flash.json | jq '.results[] | {sid: .saguaro_id, r
 | `--tasks` | `all` | Comma-sep saguaro IDs (e.g. `41B-01,41B-13`) or `all` |
 | `--max-turns` | `50` | Max tool calls per rollout (published contract; declared in the prompt) |
 | `--rollouts` | `1` | Rollouts per (model, task) cell — use ≥5 for confidence intervals |
-| `--reasoning` | `none` | Pin the reasoning budget: `none\|low\|medium\|high` (Cai §5) |
-| `--pin-provider` | `None` | Pin the OpenRouter backend (e.g. `Google`, `Z.AI`); mismatches flagged per rollout (Cai §3) |
+| `--reasoning` | `none` | Pin the reasoning budget: `none\|low\|medium\|high` |
+| `--pin-provider` | `None` | Pin the OpenRouter backend (e.g. `Google`, `Z.AI`); mismatches flagged per rollout |
 | `--image-window` | `6` | Keep image attachments only on the most recent N user messages |
 | `--cost-cap` | `None` | Abort a model once its running OpenRouter cost (USD) exceeds this |
 | `--run-id` | timestamp | Run identifier; results land at `runs/<run-id>/` |
@@ -111,7 +109,7 @@ doesn't lose work. Aggregate with `scripts/aggregate.py runs/<run-id>`.
 ## Model registry
 
 `harness/models.json` holds the OpenRouter slug + provider routing for
-each tag. The six pre-configured models match the WanderBench run:
+each tag. Six models are pre-configured:
 
 | Tag | OpenRouter slug | Provider pin |
 |---|---|---|
@@ -129,8 +127,8 @@ provider naming drifts between releases.
 
 - The harness uses **native function-calling** by default: the four tools
   are passed via OpenRouter's `tools=` parameter and the model emits
-  structured `tool_calls`, exactly like SWE-agent's FunctionCallingParser /
-  mini-swe-agent. OpenRouter normalizes every backend's native tool dialect
+  structured `tool_calls` in the standard function-calling style.
+  OpenRouter normalizes every backend's native tool dialect
   (Gemma's special tokens, Gemini's format, etc.) into the same shape, so
   results are comparable across providers. Each result records
   `tool_mode: "fc"`.
@@ -139,16 +137,16 @@ provider naming drifts between releases.
   protocol** (ReAct-style: reason, then emit one JSON tool call), recorded
   as `tool_mode: "text"`. A model gets 5 consecutive no-tool replies before
   `stop = no_tool_call_x5`.
-- **Empty-response terminator shim (Cai §2):** open-weight models sometimes
+- **Empty-response terminator shim:** open-weight models sometimes
   return `content=""` + no tool call as a clean-stop, which a naive loop scores
   as an empty submission (0.0). The harness retries this up to 4× and tags the
   rollout `terminator_shimmed: true`; the summary reports **raw vs engaged-subset**
   means separately. Always publish both.
-- **Provider pinning (Cai §3):** OpenRouter silently load-balances across backends
+- **Provider pinning:** OpenRouter silently load-balances across backends
   with different image preprocessing. `--pin-provider` forces a single backend
   (`allow_fallbacks:false`); any fallback sets `provider_mismatch: true`. Each
   rollout records `served_providers_rollout`.
-- **Reasoning budget (Cai §5):** `--reasoning` pins the effort and is recorded per
+- **Reasoning budget:** `--reasoning` pins the effort and is recorded per
   rollout; run low vs high as a sensitivity pass.
 - `max_tokens` is **unset** by default — capping it truncated reasoning models
   mid-thought (`finish=length`) and produced false zeros. Each model generates
@@ -159,8 +157,8 @@ provider naming drifts between releases.
 - Images are sent as base64 data URLs in the user message — that's the
   most portable across OpenRouter providers. The `--image-window` flag
   caps how many images stay attached at once.
-- This is intentionally NOT using the Harbor / Pier runner. Those are
-  the canonical evaluators for the published leaderboard. This harness
+- This is intentionally NOT the Harbor runner, which is
+  the canonical evaluator for the published leaderboard. This harness
   is for fast iteration + arbitrary-model exploration on a host
   machine; the results are directly comparable in absolute terms but
   use a slightly different loop shape (host-side tools vs. container-
